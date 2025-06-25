@@ -584,3 +584,45 @@ body {
   background: #0f0;
   color: #000;
 }
+
+.gamepad-3d-toggle {
+  background: #666;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: monospace;
+}
+
+.gamepad-3d-toggle:hover {
+  background: #777;
+}
+
+.gamepad-3d-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1002;
+    display: none;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+.gamepad-3d-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+}
+
+#gamepad-3d-canvas {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
