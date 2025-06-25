@@ -9,6 +9,7 @@ body {
 .header {
   background: #1a1a1abf;
   position: fixed;
+  z-index: 1001;
   top: 0;
   left: 0;
   right: 0;
@@ -126,6 +127,8 @@ body {
 .inputs {
   display: flex;
   flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
 }
 
 .section-header {
@@ -257,6 +260,8 @@ body {
 .buttons {
   display: flex;
   flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
 }
 
 /* MIDI Log Overlay Styles */

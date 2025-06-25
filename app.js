@@ -119,19 +119,44 @@ function addMIDILogEntry(type, message, details) {
     if (midiLogEntries.length > 100) {
         midiLogEntries.shift();
     }
+    
+    // Update the visual display
+    updateMIDILogDisplay();
+}
+
+function updateMIDILogDisplay() {
+    if (!midiLogContent) return;
+    
+    midiLogContent.innerHTML = '';
+    
+    midiLogEntries.forEach(entry => {
+        const entryDiv = document.createElement('div');
+        entryDiv.className = `midi-log-entry midi-log-${entry.type}`;
+        entryDiv.innerHTML = `
+            <span class="midi-log-timestamp">${entry.timestamp}</span>
+            <span class="midi-log-message">${entry.message}</span>
+            <span class="midi-log-details">${entry.details}</span>
+        `;
+        midiLogContent.appendChild(entryDiv);
+    });
+    
+    // Auto-scroll to bottom
+    midiLogContent.scrollTop = midiLogContent.scrollHeight;
 }
 
 function toggleMIDILog() {
     midiLogVisible = !midiLogVisible;
-    midiLogOverlay.style.display = midiLogVisible ? 'flex' : 'none';
-    midiLogToggle.style.color = midiLogVisible ? 'white' : 'grey';
+    if (midiLogOverlay) {
+        midiLogOverlay.style.display = midiLogVisible ? 'flex' : 'none';
+    }
+    if (midiLogToggle) {
+        midiLogToggle.style.color = midiLogVisible ? 'white' : 'grey';
+    }
 }
 
 function clearMIDILog() {
     midiLogEntries = [];
-    if (midiLogContent) {
-        midiLogContent.innerHTML = '';
-    }
+    updateMIDILogDisplay();
 }
 
 // Send MIDI CC message
@@ -518,15 +543,23 @@ midiDeviceSelect.addEventListener('change', (e) => {
 });
 
 function setupOverlayToggles() {
-    midiLogToggle.addEventListener('click', toggleMIDILog);
+    if (midiLogToggle) {
+        midiLogToggle.addEventListener('click', toggleMIDILog);
+    }
     
-    gamepad3DToggle.addEventListener('click', () => {
-        gamepad3DVisible = !gamepad3DVisible;
-        gamepad3DOverlay.style.display = gamepad3DVisible ? 'flex' : 'none';
-        gamepad3DToggle.style.color = gamepad3DVisible ? 'white' : 'grey';
-    });
+    if (gamepad3DToggle) {
+        gamepad3DToggle.addEventListener('click', () => {
+            gamepad3DVisible = !gamepad3DVisible;
+            if (gamepad3DOverlay) {
+                gamepad3DOverlay.style.display = gamepad3DVisible ? 'flex' : 'none';
+            }
+            gamepad3DToggle.style.color = gamepad3DVisible ? 'white' : 'grey';
+        });
+    }
     
-    midiLogClearBtn.addEventListener('click', clearMIDILog);
+    if (midiLogClearBtn) {
+        midiLogClearBtn.addEventListener('click', clearMIDILog);
+    }
 }
 
 // Initialize everything
