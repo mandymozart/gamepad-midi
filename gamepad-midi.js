@@ -196,11 +196,11 @@ const controllerTemplate = `
 
 const axisTemplate = `
 <div>
-    <svg viewBox="-2.2 -2.2 4.4 4.4" width="100" height="100">
+    <svg viewBox="-2.2 -2.2 4.4 4.4" width="80" height="80">
         <circle cx="0" cy="0" r="2" fill="none" stroke="#888" stroke-width="0.04" />
         <path d="M0,-2L0,2M-2,0L2,0" stroke="#888" stroke-width="0.04" />
         <circle cx="0" cy="0" r="0.22" fill="red" class="axis" />
-        <text text-anchor="middle" fill="#CCC" x="0" y="2.6">Axis</text>
+        <text text-anchor="middle" fill="#CCC" x="0" y="2.6" class="axis-label">Axis</text>
         <text text-anchor="middle" fill="#CCC" x="0" y="-2.4" class="axis-index">0</text>
     </svg>
     <div class="control-row">
@@ -251,11 +251,24 @@ function addGamepad(gamepad) {
         axesElem.appendChild(div);
         
         const axisIndex = div.querySelector('.axis-index');
+        const axisLabel = div.querySelector('.axis-label');
         const enabledCheckbox = div.querySelector('.axis-enabled');
         const ccControl = div.querySelector('.cc-control');
         const midiValue = div.querySelector('.midi-value');
         
         axisIndex.textContent = ndx;
+        
+        // Label axes as X/Y for pairs, or just the number for singles
+        let axisName = '';
+        if (ndx % 2 === 0 && ndx + 1 < gamepad.axes.length) {
+            axisName = `${Math.floor(ndx / 2)} X`;
+        } else if (ndx % 2 === 1) {
+            axisName = `${Math.floor(ndx / 2)} Y`;
+        } else {
+            axisName = `${ndx}`;
+        }
+        axisLabel.textContent = axisName;
+        
         ccControl.value = ndx + 1; // Default CC mapping
         
         // Set up event listeners
@@ -385,18 +398,15 @@ function processController(info) {
         const axisValue = gamepad.axes[ndx];
         const midiVal = axisToMIDI(axisValue);
         
-        // Update visual
-        if (ndx % 2 === 0 && ndx + 1 < gamepad.axes.length) {
-            // Paired axes (like analog sticks)
-            axis.setAttributeNS(null, 'cx', axisValue * fudgeFactor);
-            axis.setAttributeNS(null, 'cy', gamepad.axes[ndx + 1] * fudgeFactor);
-        } else if (ndx % 2 === 1) {
-            // Skip odd indices as they're handled with even indices
-            return;
-        } else {
-            // Single axis
+        // Update visual - X axes move horizontally, Y axes move vertically
+        if (ndx % 2 === 0) {
+            // X axis - move horizontally
             axis.setAttributeNS(null, 'cx', axisValue * fudgeFactor);
             axis.setAttributeNS(null, 'cy', 0);
+        } else {
+            // Y axis - move vertically  
+            axis.setAttributeNS(null, 'cx', 0);
+            axis.setAttributeNS(null, 'cy', axisValue * fudgeFactor);
         }
         
         midiValue.textContent = `MIDI: ${midiVal}`;
