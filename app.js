@@ -19,12 +19,16 @@ const gamepad3DToggle = document.querySelector('.gamepad-3d-toggle');
 const gamepad3DOverlay = document.querySelector('.gamepad-3d-overlay');
 const gamepad3DClose = document.querySelector('.gamepad-3d-close');
 
+// Gamepads toggle elements
+const gamepadsToggle = document.querySelector('.gamepads-toggle');
+
 const gamepadsByIndex = {};
 let midiOutput = null;
 let midiAccess = null;
 let midiLogVisible = false;
 let midiLogEntries = [];
 let gamepad3DVisible = false;
+let gamepadsVisible = true; // Default to visible
 
 // MIDI Configuration
 const midiConfig = {
@@ -573,6 +577,16 @@ function setupOverlayToggles() {
                 gamepad3DOverlay.style.display = gamepad3DVisible ? 'flex' : 'none';
             }
             gamepad3DToggle.style.color = gamepad3DVisible ? 'white' : 'grey';
+        });
+    }
+    
+    if (gamepadsToggle) {
+        gamepadsToggle.addEventListener('click', () => {
+            gamepadsVisible = !gamepadsVisible;
+            if (gamepadsElem) {
+                gamepadsElem.style.display = gamepadsVisible ? 'flex' : 'none';
+            }
+            gamepadsToggle.style.color = gamepadsVisible ? 'white' : 'grey';
         });
     }
     
