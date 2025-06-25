@@ -35,7 +35,8 @@ const midiConfig = {
     buttonEnabled: new Map(), // button index -> boolean
     velocities: new Map(), // button index -> velocity
     lastAxisValues: new Map(), // axis index -> last sent MIDI value
-    lastButtonStates: new Map() // button index -> last pressed state
+    lastButtonStates: new Map(), // button index -> last pressed state
+    axisInverted: new Map() // axis index -> boolean
 };
 
 // Initialize MIDI
@@ -90,11 +91,15 @@ function selectMIDIDevice(deviceId) {
 }
 
 // Convert gamepad axis value (-1 to 1) to MIDI CC value (0 to 127)
-function axisToMIDI(axisValue) {
+function axisToMIDI(axisValue, inverted) {
     // Clamp to -1, 1 range
     const clamped = Math.max(-1, Math.min(1, axisValue));
     // Convert to 0-127 range with 64 as center
-    return Math.round((clamped + 1) * 63.5);
+    let midiVal = Math.round((clamped + 1) * 63.5);
+    if (inverted) {
+        midiVal = 127 - midiVal;
+    }
+    return midiVal;
 }
 
 // MIDI Logging Functions
@@ -194,6 +199,9 @@ const axisTemplate = `
         <input type="checkbox" class="enabled-checkbox axis-enabled"> Enable
     </div>
     <div class="control-row">
+        <input type="checkbox" class="invert-checkbox axis-invert"> Invert
+    </div>
+    <div class="control-row">
         <label>CC #:</label>
         <input type="number" class="cc-control" min="0" max="127" value="1">
         <span class="midi-value"></span>
@@ -240,6 +248,7 @@ function addGamepad(gamepad) {
         const axisIndex = div.querySelector('.axis-index');
         const axisLabel = div.querySelector('.axis-label');
         const enabledCheckbox = div.querySelector('.axis-enabled');
+        const invertCheckbox = div.querySelector('.axis-invert');
         const ccControl = div.querySelector('.cc-control');
         const midiValue = div.querySelector('.midi-value');
         
@@ -263,12 +272,17 @@ function addGamepad(gamepad) {
             midiConfig.axisEnabled.set(`${gamepad.index}-${ndx}`, e.target.checked);
         });
         
+        invertCheckbox.addEventListener('change', (e) => {
+            midiConfig.axisInverted.set(`${gamepad.index}-${ndx}`, e.target.checked);
+        });
+        
         ccControl.addEventListener('change', (e) => {
             midiConfig.ccChannels.set(`${gamepad.index}-${ndx}`, parseInt(e.target.value));
         });
         
         // Initialize with defaults
         midiConfig.axisEnabled.set(`${gamepad.index}-${ndx}`, false);
+        midiConfig.axisInverted.set(`${gamepad.index}-${ndx}`, false);
         midiConfig.ccChannels.set(`${gamepad.index}-${ndx}`, ndx + 1);
         
         axes.push({
@@ -363,6 +377,7 @@ function removeGamepad(gamepad) {
         for (let i = 0; i < gamepad.axes.length; i++) {
             const axisKey = `${gamepad.index}-${i}`;
             midiConfig.axisEnabled.delete(axisKey);
+            midiConfig.axisInverted.delete(axisKey);
             midiConfig.ccChannels.delete(axisKey);
             midiConfig.lastAxisValues.delete(axisKey);
         }
@@ -411,7 +426,8 @@ function processController(info) {
     // Process axes and send MIDI CC messages
     axes.forEach(({axis, midiValue}, ndx) => {
         const axisValue = gamepad.axes[ndx];
-        const midiVal = axisToMIDI(axisValue);
+        const inverted = midiConfig.axisInverted.get(`${gamepad.index}-${ndx}`);
+        const midiVal = axisToMIDI(axisValue, inverted);
         
         // Update visual - X axes move horizontally, Y axes move vertically
         if (ndx % 2 === 0) {

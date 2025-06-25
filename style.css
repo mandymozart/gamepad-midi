@@ -216,6 +216,22 @@ body {
   font-family: monospace;
 }
 
+.control-row input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+.control-row input[type="checkbox"] + label,
+.control-row input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.axis-enabled,
+.axis-invert,
+.button-enabled {
+  accent-color: #0f0;
+}
+
 .midi-value {
   color: #0f0;
   font-weight: bold;
