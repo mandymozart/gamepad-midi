@@ -22,7 +22,7 @@ function createWindow() {
       enableRemoteModule: false,
       preload: path.join(__dirname, 'preload.js')
     },
-    icon: path.join(__dirname, 'xbox-gamepad.svg'), // Use existing gamepad icon
+    icon: path.join(__dirname, 'icon.png'), // Use existing gamepad icon
     title: 'Gamepad MIDI Controller'
   });
 

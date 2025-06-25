@@ -30,7 +30,7 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "icon.ico"
+      "icon": "icon.png"
     },
     "mac": {
       "target": "dmg",
