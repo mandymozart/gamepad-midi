@@ -26,7 +26,9 @@ const midiConfig = {
     noteChannels: new Map(), // button index -> note number
     axisEnabled: new Map(), // axis index -> boolean
     buttonEnabled: new Map(), // button index -> boolean
-    velocities: new Map() // button index -> velocity
+    velocities: new Map(), // button index -> velocity
+    lastAxisValues: new Map(), // axis index -> last sent MIDI value
+    lastButtonStates: new Map() // button index -> last pressed state
 };
 
 // Initialize MIDI
@@ -348,15 +350,19 @@ function addGamepad(gamepad) {
 function removeGamepad(gamepad) {
     const info = gamepadsByIndex[gamepad.index];
     if (info) {
-        // Clean up MIDI mappings
+        // Clean up MIDI mappings and tracking values
         for (let i = 0; i < gamepad.axes.length; i++) {
-            midiConfig.axisEnabled.delete(`${gamepad.index}-${i}`);
-            midiConfig.ccChannels.delete(`${gamepad.index}-${i}`);
+            const axisKey = `${gamepad.index}-${i}`;
+            midiConfig.axisEnabled.delete(axisKey);
+            midiConfig.ccChannels.delete(axisKey);
+            midiConfig.lastAxisValues.delete(axisKey);
         }
         for (let i = 0; i < gamepad.buttons.length; i++) {
-            midiConfig.buttonEnabled.delete(`${gamepad.index}-${i}`);
-            midiConfig.noteChannels.delete(`${gamepad.index}-${i}`);
-            midiConfig.velocities.delete(`${gamepad.index}-${i}`);
+            const buttonKey = `${gamepad.index}-${i}`;
+            midiConfig.buttonEnabled.delete(buttonKey);
+            midiConfig.noteChannels.delete(buttonKey);
+            midiConfig.velocities.delete(buttonKey);
+            midiConfig.lastButtonStates.delete(buttonKey);
         }
         
         delete gamepadsByIndex[gamepad.index];
@@ -416,7 +422,11 @@ function processController(info) {
         if (midiConfig.axisEnabled.get(axisKey) && midiOutput) {
             const ccNumber = midiConfig.ccChannels.get(axisKey);
             if (ccNumber !== undefined) {
-                sendMIDICC(ccNumber, midiVal);
+                const lastValue = midiConfig.lastAxisValues.get(axisKey);
+                if (lastValue === undefined || Math.abs(lastValue - midiVal) > 1) {
+                    sendMIDICC(ccNumber, midiVal);
+                    midiConfig.lastAxisValues.set(axisKey, midiVal);
+                }
             }
         }
     });
@@ -443,10 +453,12 @@ function processController(info) {
                 if (button.pressed && !buttonInfo.pressed) {
                     // Button just pressed
                     sendMIDINoteOn(noteNumber, velocity);
+                    midiConfig.lastButtonStates.set(buttonKey, true);
                     buttonInfo.pressed = true;
                 } else if (!button.pressed && buttonInfo.pressed) {
                     // Button just released
                     sendMIDINoteOff(noteNumber);
+                    midiConfig.lastButtonStates.set(buttonKey, false);
                     buttonInfo.pressed = false;
                 }
             }
