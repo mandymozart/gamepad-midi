@@ -415,6 +415,7 @@ function addGamepad(gamepad) {
         mapping: elem.querySelector('.mapping'),
         connected: elem.querySelector('.connected'),
     };
+    gamepadsElem.innerHTML = '';
     gamepadsElem.appendChild(elem);
 }
 
@@ -488,7 +489,7 @@ function processController(info) {
             axis.setAttributeNS(null, 'cy', axisValue * fudgeFactor);
         }
         
-        midiValue.textContent = `MIDI: ${midiVal}`;
+        midiValue.textContent = `${midiVal}`;
         
         // Send MIDI if enabled
         const axisKey = `${gamepad.index}-${ndx}`;

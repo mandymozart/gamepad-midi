@@ -158,11 +158,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  padding: 0 5px;
+  margin-bottom: .5rem;
 }
 
 .section-header h4 {
+  padding: 0 1rem;
   margin: 0;
   color: #ccc;
 }
@@ -212,6 +212,7 @@ body {
   background: #222;
   margin: 2px;
   border-radius: 3px;
+  padding: .5rem;
 }
 
 .axis-controls,
@@ -262,10 +263,11 @@ body {
 .midi-value {
   color: #0f0;
   font-weight: bold;
-  min-width: 50px;
   position: absolute;
-  right: 0;
-  top: 0;
+  right: .5rem;
+  top: .5rem;
+  text-align: right;
+  font-size: .8rem;
 }
 
 .velocity-control {
@@ -338,8 +340,8 @@ body {
 }
 
 .midi-log-controls button {
-  background: #555;
-  color: white;
+  background: #000000;
+  color: rgb(187, 187, 187);
   border: none;
   padding: 4px 8px;
   border-radius: 3px;
@@ -348,7 +350,7 @@ body {
 }
 
 .midi-log-controls button:hover {
-  background: #666;
+  background: #2b2b2b;
 }
 
 .midi-log-content {
@@ -386,42 +388,19 @@ body {
   font-size: 10px;
 }
 
-.gamepad-3d-toggle {
-  background: #666;
+.midi-controls button {
+  background: transparent;
+  color: rgb(113, 113, 113);
   border: none;
-  border-radius: 4px;
-  color: white;
-  padding: 8px 12px;
+  padding: .5rem 1rem;
+  border-radius: 1rem;
   cursor: pointer;
-  font-size: 14px;
   transition: background-color 0.2s;
 }
 
-.gamepads-toggle {
-  background: #666;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-
-.gamepad-3d-toggle:hover {
-  background: #888;
-}
-
-.gamepads-toggle:hover {
-  background: #888;
-}
-
-.gamepad-3d-toggle.active {
-  background: #4CAF50;
-}
-
-.gamepads-toggle.active {
-  background: #4CAF50;
+.midi-controls button:hover {
+  background: #3b3b3b;
+  color: rgb(202, 202, 202);
 }
 
 .gamepad-3d-overlay {
