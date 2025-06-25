@@ -319,9 +319,12 @@ function addGamepad(gamepad) {
         });
         
         // Initialize with defaults
-        midiConfig.axisEnabled.set(`${gamepad.index}-${ndx}`, false);
+        midiConfig.axisEnabled.set(`${gamepad.index}-${ndx}`, true);
         midiConfig.axisInverted.set(`${gamepad.index}-${ndx}`, false);
         midiConfig.ccChannels.set(`${gamepad.index}-${ndx}`, ndx + 1);
+        
+        // Check the enabled checkbox since we're enabling by default
+        enabledCheckbox.checked = true;
         
         axes.push({
             axis: div.querySelector('.axis'),
