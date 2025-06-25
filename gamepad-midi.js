@@ -13,11 +13,19 @@ const midiLogOverlay = document.querySelector('.midi-log-overlay');
 const midiLogContent = document.querySelector('.midi-log-content');
 const midiLogClearBtn = document.querySelector('.midi-log-controls button');
 
+// Gamepad Visual elements
+const gamepadVisualToggle = document.querySelector('.gamepad-visual-toggle');
+const gamepadVisualOverlay = document.querySelector('.gamepad-visual-overlay');
+const gamepadVisualContent = document.querySelector('.gamepad-visual-content');
+const gamepadVisualClose = document.querySelector('.gamepad-visual-close');
+
 const gamepadsByIndex = {};
 let midiOutput = null;
 let midiAccess = null;
 let midiLogVisible = false;
 let midiLogEntries = [];
+let gamepadVisualVisible = false;
+let currentVisualGamepad = null;
 
 // MIDI Configuration
 const midiConfig = {
@@ -480,7 +488,17 @@ function process() {
     runningElem.textContent = ((performance.now() * 0.001 * 60 | 0) % 100).toString().padStart(2, '0');
     addNewPads();
     
+    // Update the current visual gamepad to the first connected gamepad
+    const connectedGamepads = Object.values(gamepadsByIndex);
+    if (connectedGamepads.length > 0 && !currentVisualGamepad) {
+        currentVisualGamepad = connectedGamepads[0].gamepad;
+    } else if (connectedGamepads.length > 0) {
+        // Update the gamepad reference (Chrome creates new objects each frame)
+        currentVisualGamepad = connectedGamepads[0].gamepad;
+    }
+    
     Object.values(gamepadsByIndex).forEach(processController);
+    updateGamepadVisual(); // Update the visual representation
     requestAnimationFrame(process);
 }
 
@@ -495,6 +513,119 @@ midiDeviceSelect.addEventListener('change', (e) => {
 midiLogToggle.addEventListener('click', toggleMIDILog);
 midiLogClearBtn.addEventListener('click', clearMIDILog);
 
+gamepadVisualToggle.addEventListener('click', () => {
+    gamepadVisualVisible = !gamepadVisualVisible;
+    gamepadVisualOverlay.style.display = gamepadVisualVisible ? 'flex' : 'none';
+    gamepadVisualToggle.textContent = gamepadVisualVisible ? 'Hide Gamepad Visual' : 'Show Gamepad Visual';
+});
+
+gamepadVisualClose.addEventListener('click', () => {
+    gamepadVisualVisible = false;
+    gamepadVisualOverlay.style.display = 'none';
+    gamepadVisualToggle.textContent = 'Show Gamepad Visual';
+});
+
+// Gamepad Visual Functions
+function createGamepadVisual() {
+    const gamepadHTML = `
+        <div class="gamepad-controller">
+            <div class="gamepad-handles"></div>
+            
+            <!-- Trigger buttons -->
+            <div class="trigger-buttons">
+                <div class="trigger-button button-l2" data-button="6">L2</div>
+                <div class="trigger-button button-r2" data-button="7">R2</div>
+            </div>
+            
+            <!-- Shoulder buttons -->
+            <div class="shoulder-buttons">
+                <div class="shoulder-button button-l1" data-button="4">L1</div>
+                <div class="shoulder-button button-r1" data-button="5">R1</div>
+            </div>
+            
+            <!-- Center buttons -->
+            <div class="center-buttons">
+                <div class="center-button" data-button="8">Select</div>
+                <div class="center-button" data-button="9">Start</div>
+            </div>
+            
+            <!-- D-pad -->
+            <div class="dpad">
+                <div class="dpad-button dpad-up" data-button="12"></div>
+                <div class="dpad-button dpad-down" data-button="13"></div>
+                <div class="dpad-button dpad-left" data-button="14"></div>
+                <div class="dpad-button dpad-right" data-button="15"></div>
+            </div>
+            
+            <!-- Face buttons -->
+            <div class="face-buttons">
+                <div class="face-button button-y" data-button="3">Y</div>
+                <div class="face-button button-x" data-button="2">X</div>
+                <div class="face-button button-b" data-button="1">B</div>
+                <div class="face-button button-a" data-button="0">A</div>
+            </div>
+            
+            <!-- Analog sticks -->
+            <div class="analog-stick left-stick" data-button="10">
+                <div class="stick-dot" data-axes="0,1"></div>
+            </div>
+            <div class="analog-stick right-stick" data-button="11">
+                <div class="stick-dot" data-axes="2,3"></div>
+            </div>
+        </div>
+    `;
+    
+    gamepadVisualContent.innerHTML = gamepadHTML;
+}
+
+function updateGamepadVisual() {
+    if (!gamepadVisualVisible || !currentVisualGamepad) return;
+    
+    const gamepad = currentVisualGamepad;
+    
+    // Update buttons
+    const buttonElements = gamepadVisualContent.querySelectorAll('[data-button]');
+    buttonElements.forEach(element => {
+        const buttonIndex = parseInt(element.dataset.button);
+        if (buttonIndex < gamepad.buttons.length) {
+            const button = gamepad.buttons[buttonIndex];
+            if (button.pressed) {
+                element.classList.add('pressed');
+            } else {
+                element.classList.remove('pressed');
+            }
+        }
+    });
+    
+    // Update analog sticks
+    const stickElements = gamepadVisualContent.querySelectorAll('[data-axes]');
+    stickElements.forEach(element => {
+        const [xAxis, yAxis] = element.dataset.axes.split(',').map(Number);
+        if (xAxis < gamepad.axes.length && yAxis < gamepad.axes.length) {
+            const x = gamepad.axes[xAxis] * 15; // Scale movement
+            const y = gamepad.axes[yAxis] * 15;
+            element.style.transform = `translate(${x}px, ${y}px)`;
+        }
+    });
+    
+    // Update analog stick press states
+    const leftStick = gamepadVisualContent.querySelector('.left-stick');
+    const rightStick = gamepadVisualContent.querySelector('.right-stick');
+    
+    if (leftStick && gamepad.buttons[10] && gamepad.buttons[10].pressed) {
+        leftStick.classList.add('pressed');
+    } else if (leftStick) {
+        leftStick.classList.remove('pressed');
+    }
+    
+    if (rightStick && gamepad.buttons[11] && gamepad.buttons[11].pressed) {
+        rightStick.classList.add('pressed');
+    } else if (rightStick) {
+        rightStick.classList.remove('pressed');
+    }
+}
+
 // Initialize everything
 initMIDI();
+createGamepadVisual();
 requestAnimationFrame(process);
