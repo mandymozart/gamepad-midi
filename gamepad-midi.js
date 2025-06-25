@@ -7,9 +7,17 @@ const gamepadsElem = document.querySelector('#gamepads');
 const midiDeviceSelect = document.querySelector('#midiDevice');
 const midiStatusElem = document.querySelector('#midiStatus');
 
+// MIDI Log elements
+const midiLogToggle = document.querySelector('.midi-log-toggle');
+const midiLogOverlay = document.querySelector('.midi-log-overlay');
+const midiLogContent = document.querySelector('.midi-log-content');
+const midiLogClearBtn = document.querySelector('.midi-log-controls button');
+
 const gamepadsByIndex = {};
 let midiOutput = null;
 let midiAccess = null;
+let midiLogVisible = false;
+let midiLogEntries = [];
 
 // MIDI Configuration
 const midiConfig = {
@@ -80,12 +88,73 @@ function axisToMIDI(axisValue) {
     return Math.round((clamped + 1) * 63.5);
 }
 
+// MIDI Logging Functions
+function addMIDILogEntry(type, message, details) {
+    const timestamp = new Date().toLocaleTimeString();
+    const entry = {
+        type,
+        message,
+        details,
+        timestamp,
+        id: Date.now() + Math.random() // Simple unique ID
+    };
+    
+    midiLogEntries.push(entry);
+    
+    // Keep only last 100 entries to prevent memory issues
+    if (midiLogEntries.length > 100) {
+        midiLogEntries.shift();
+    }
+    
+    updateMIDILogDisplay();
+}
+
+function updateMIDILogDisplay() {
+    if (!midiLogVisible) return;
+    
+    midiLogContent.innerHTML = '';
+    
+    midiLogEntries.slice(-50).forEach(entry => { // Show last 50 entries
+        const div = document.createElement('div');
+        div.className = `midi-log-entry ${entry.type}`;
+        div.innerHTML = `
+            <div>
+                <span class="timestamp">[${entry.timestamp}]</span>
+                ${entry.message}
+            </div>
+            <div style="font-size: 10px; color: #aaa; margin-left: 20px;">
+                ${entry.details}
+            </div>
+        `;
+        midiLogContent.appendChild(div);
+    });
+    
+    // Auto-scroll to bottom
+    midiLogContent.scrollTop = midiLogContent.scrollHeight;
+}
+
+function toggleMIDILog() {
+    midiLogVisible = !midiLogVisible;
+    midiLogOverlay.style.display = midiLogVisible ? 'flex' : 'none';
+    midiLogToggle.textContent = midiLogVisible ? 'Hide MIDI Log' : 'Show MIDI Log';
+    
+    if (midiLogVisible) {
+        updateMIDILogDisplay();
+    }
+}
+
+function clearMIDILog() {
+    midiLogEntries = [];
+    updateMIDILogDisplay();
+}
+
 // Send MIDI CC message
 function sendMIDICC(ccNumber, value, channel = 0) {
     if (!midiOutput) return;
     
     const status = 0xB0 + channel; // CC message on channel
     midiOutput.send([status, ccNumber, value]);
+    addMIDILogEntry('cc', `CC ${ccNumber} sent`, `Value: ${value}`);
 }
 
 // Send MIDI Note On
@@ -94,6 +163,7 @@ function sendMIDINoteOn(note, velocity, channel = 0) {
     
     const status = 0x90 + channel; // Note on message on channel
     midiOutput.send([status, note, velocity]);
+    addMIDILogEntry('note-on', `Note ${note} on`, `Velocity: ${velocity}`);
 }
 
 // Send MIDI Note Off
@@ -102,6 +172,7 @@ function sendMIDINoteOff(note, channel = 0) {
     
     const status = 0x80 + channel; // Note off message on channel
     midiOutput.send([status, note, 0]);
+    addMIDILogEntry('note-off', `Note ${note} off`, '');
 }
 
 // Templates for gamepad display with MIDI controls
@@ -398,6 +469,9 @@ window.addEventListener("gamepaddisconnected", handleDisconnect);
 midiDeviceSelect.addEventListener('change', (e) => {
     selectMIDIDevice(e.target.value);
 });
+
+midiLogToggle.addEventListener('click', toggleMIDILog);
+midiLogClearBtn.addEventListener('click', clearMIDILog);
 
 // Initialize everything
 initMIDI();

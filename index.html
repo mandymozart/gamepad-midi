@@ -184,6 +184,104 @@
             display: flex;
             flex-wrap: wrap;
         }
+
+        /* MIDI Log Overlay Styles */
+        .midi-log-toggle {
+            background: #666;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin: 10px 0;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: monospace;
+        }
+
+        .midi-log-toggle:hover {
+            background: #777;
+        }
+
+        .midi-log-overlay {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 400px;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #666;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .midi-log-header {
+            background: #333;
+            padding: 10px;
+            border-bottom: 1px solid #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .midi-log-header h4 {
+            margin: 0;
+            color: white;
+        }
+
+        .midi-log-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .midi-log-controls button {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .midi-log-controls button:hover {
+            background: #666;
+        }
+
+        .midi-log-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .midi-log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+            border-radius: 2px;
+        }
+
+        .midi-log-entry.cc {
+            background: rgba(0, 100, 200, 0.2);
+            border-left: 3px solid #0064c8;
+        }
+
+        .midi-log-entry.note-on {
+            background: rgba(0, 200, 0, 0.2);
+            border-left: 3px solid #00c800;
+        }
+
+        .midi-log-entry.note-off {
+            background: rgba(200, 0, 0, 0.2);
+            border-left: 3px solid #c80000;
+        }
+
+        .midi-log-entry .timestamp {
+            color: #888;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -203,6 +301,18 @@
     </div>
     <div id="midiStatus" class="midi-status status-disconnected">
         MIDI: Not Connected
+    </div>
+    <button class="midi-log-toggle">Show MIDI Log</button>
+    <div class="midi-log-overlay">
+        <div class="midi-log-header">
+            <h4>MIDI Log</h4>
+            <div class="midi-log-controls">
+                <button>Clear Log</button>
+            </div>
+        </div>
+        <div class="midi-log-content">
+            <!-- MIDI log entries will be displayed here -->
+        </div>
     </div>
 </div>
 
