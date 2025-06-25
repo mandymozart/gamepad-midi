@@ -164,11 +164,17 @@ const controllerTemplate = `
   <div class="info"><div class="label">mapping:</div><span class="mapping"></span></div>
   <div class="inputs">
     <div class="axes-section">
-        <h4>Axes (Analog Controls)</h4>
+        <div class="section-header">
+            <h4>Axes (Analog Controls)</h4>
+            <button class="enable-all-axes" type="button">Enable All</button>
+        </div>
         <div class="axes"></div>
     </div>
     <div class="buttons-section">
-        <h4>Buttons</h4>
+        <div class="section-header">
+            <h4>Buttons</h4>
+            <button class="enable-all-buttons" type="button">Enable All</button>
+        </div>
         <div class="buttons"></div>
     </div>
   </div>
@@ -312,6 +318,30 @@ function addGamepad(gamepad) {
             pressed: false
         });
     }
+
+    // Add event listeners for Enable All buttons
+    const enableAllAxesBtn = elem.querySelector('.enable-all-axes');
+    const enableAllButtonsBtn = elem.querySelector('.enable-all-buttons');
+    
+    enableAllAxesBtn.addEventListener('click', () => {
+        for (let ndx = 0; ndx < gamepad.axes.length; ndx++) {
+            const axisKey = `${gamepad.index}-${ndx}`;
+            midiConfig.axisEnabled.set(axisKey, true);
+            const axisDiv = axesElem.children[ndx];
+            const checkbox = axisDiv.querySelector('.axis-enabled');
+            checkbox.checked = true;
+        }
+    });
+    
+    enableAllButtonsBtn.addEventListener('click', () => {
+        for (let ndx = 0; ndx < gamepad.buttons.length; ndx++) {
+            const buttonKey = `${gamepad.index}-${ndx}`;
+            midiConfig.buttonEnabled.set(buttonKey, true);
+            const buttonDiv = buttonsElem.children[ndx];
+            const checkbox = buttonDiv.querySelector('.button-enabled');
+            checkbox.checked = true;
+        }
+    });
 
     gamepadsByIndex[gamepad.index] = {
         gamepad,

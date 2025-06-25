@@ -127,10 +127,45 @@ body {
   display: flex;
   flex-wrap: wrap;
 }
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 5px;
+}
+
+.section-header h4 {
+  margin: 0;
+  color: #ccc;
+}
+
+.enable-all-axes,
+.enable-all-buttons {
+  background: #555;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-family: monospace;
+}
+
+.enable-all-axes:hover,
+.enable-all-buttons:hover {
+  background: #666;
+}
+
 .axes {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
+}
+.axes > div {
+    position: relative;
 }
 
 .svg text {
@@ -155,6 +190,7 @@ body {
 .axis-controls,
 .button-controls {
   margin: 10px 0;
+  position: relative;
   padding: 10px;
   background: #2a2a2a;
   border-radius: 3px;
@@ -184,6 +220,9 @@ body {
   color: #0f0;
   font-weight: bold;
   min-width: 50px;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .velocity-control {
