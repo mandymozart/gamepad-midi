@@ -65,12 +65,25 @@ function updateMIDIDeviceList() {
     // Clear existing options
     midiDeviceSelect.innerHTML = '<option value="">Select...</option>';
 
+    let firstDeviceId = null;
+    
     // Add available MIDI output devices
     for (let output of midiAccess.outputs.values()) {
         const option = document.createElement('option');
         option.value = output.id;
         option.textContent = output.name;
         midiDeviceSelect.appendChild(option);
+        
+        // Remember the first device ID
+        if (!firstDeviceId) {
+            firstDeviceId = output.id;
+        }
+    }
+    
+    // Auto-select the first MIDI device if available
+    if (firstDeviceId) {
+        midiDeviceSelect.value = firstDeviceId;
+        selectMIDIDevice(firstDeviceId);
     }
 }
 
@@ -345,10 +358,13 @@ function addGamepad(gamepad) {
             midiConfig.velocities.set(`${gamepad.index}-${ndx}`, parseInt(e.target.value));
         });
         
-        // Initialize with defaults
-        midiConfig.buttonEnabled.set(`${gamepad.index}-${ndx}`, false);
+        // Initialize with defaults - enable all controls automatically
+        midiConfig.buttonEnabled.set(`${gamepad.index}-${ndx}`, true);
         midiConfig.noteChannels.set(`${gamepad.index}-${ndx}`, 60 + ndx);
         midiConfig.velocities.set(`${gamepad.index}-${ndx}`, 127);
+        
+        // Check the enabled checkbox since we're enabling by default
+        enabledCheckbox.checked = true;
         
         buttons.push({
             circle: div.querySelector('.button'),

@@ -10,7 +10,12 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    frame: false,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#000000',
+      symbolColor: '#ffffff',
+      height: 50
+    },
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -66,6 +71,24 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  // Handle fullscreen mode - hide window controls
+  mainWindow.on('enter-full-screen', () => {
+    mainWindow.setTitleBarOverlay({
+      color: '#000000',
+      symbolColor: '#ffffff',
+      height: 0 // Hide the title bar overlay completely
+    });
+  });
+
+  // Handle leaving fullscreen - show window controls
+  mainWindow.on('leave-full-screen', () => {
+    mainWindow.setTitleBarOverlay({
+      color: '#000000',
+      symbolColor: '#ffffff',
+      height: 50 // Restore the title bar overlay
+    });
   });
 }
 

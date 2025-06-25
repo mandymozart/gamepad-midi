@@ -7,7 +7,7 @@ body {
 }
 
 .header {
-  background: #1a1a1abf;
+  background: #000;
   position: fixed;
   z-index: 1001;
   top: 0;
@@ -15,12 +15,23 @@ body {
   right: 0;
   padding: 0 1rem;
   display: flex;
+  height: 50px;
   backdrop-filter: blur(10px);
-  justify-content: space-between;
   align-items: center;
   gap: 1em;
   flex-direction: row;
+  -webkit-app-region: drag;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 1);
 }
+/* No drag for interactive elements */
+.header .midi-controls,
+.header select,
+.header button,
+.midi-log-toggle,
+.gamepad-3d-toggle {
+  -webkit-app-region: no-drag;
+}
+
 .header h1 {
     color: white;
     fill: white;
@@ -78,6 +89,7 @@ body {
     border-radius: 50%;
     color: white;
     padding: 0;
+    filter: blur(10px);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -725,3 +737,51 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+/* Custom Dark Scrollbars */
+/* Webkit browsers (Chrome, Safari, newer Edge) */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 6px;
+  border: 2px solid #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #888;
+}
+
+::-webkit-scrollbar-corner {
+  background: #1a1a1a;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #444 #1a1a1a;
+}
+
+/* Alternative: Hide scrollbars completely (uncomment to use)
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*/
+
+/* Make interactive elements non-draggable */
