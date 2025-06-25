@@ -62,7 +62,7 @@ function updateMIDIDeviceList() {
     if (!midiAccess) return;
 
     // Clear existing options
-    midiDeviceSelect.innerHTML = '<option value="">Select MIDI Device...</option>';
+    midiDeviceSelect.innerHTML = '<option value="">Select...</option>';
 
     // Add available MIDI output devices
     for (let output of midiAccess.outputs.values()) {
@@ -119,7 +119,7 @@ function addMIDILogEntry(type, message, details) {
 function toggleMIDILog() {
     midiLogVisible = !midiLogVisible;
     midiLogOverlay.style.display = midiLogVisible ? 'flex' : 'none';
-    midiLogToggle.textContent = midiLogVisible ? 'Hide MIDI Log' : 'Show MIDI Log';
+    midiLogToggle.style.color = midiLogVisible ? 'white' : 'grey';
 }
 
 function clearMIDILog() {
@@ -477,23 +477,10 @@ function setupOverlayToggles() {
     gamepad3DToggle.addEventListener('click', () => {
         gamepad3DVisible = !gamepad3DVisible;
         gamepad3DOverlay.style.display = gamepad3DVisible ? 'flex' : 'none';
-        gamepad3DToggle.textContent = gamepad3DVisible ? 'Hide 3D Gamepad' : 'Show 3D Gamepad';
+        gamepad3DToggle.style.color = gamepad3DVisible ? 'white' : 'grey';
     });
     
     midiLogClearBtn.addEventListener('click', clearMIDILog);
-}
-
-function toggleMIDILog() {
-    midiLogVisible = !midiLogVisible;
-    midiLogOverlay.style.display = midiLogVisible ? 'flex' : 'none';
-    midiLogToggle.textContent = midiLogVisible ? 'Hide MIDI Log' : 'Show MIDI Log';
-}
-
-function clearMIDILog() {
-    midiLogEntries = [];
-    if (midiLogContent) {
-        midiLogContent.innerHTML = '';
-    }
 }
 
 // Initialize everything

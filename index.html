@@ -1,78 +1,89 @@
-<!--
-/*
- * Copyright 2019 Gregg Tavares
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
--->
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Gamepad to MIDI Controller</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<div class="header">
-    <h1>Gamepad to MIDI Controller</h1>
-    <div>Status: <span id="running"></span></div>
-</div>
-
-<div class="midi-controls">
-    <h3>MIDI Configuration</h3>
-    <div class="midi-device-selector">
-        <label>MIDI Output Device: </label>
-        <select id="midiDevice">
-            <option value="">Select MIDI Device...</option>
-        </select>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <div class="brand">
+        <h1>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            version="1.2"
+            baseProfile="tiny"
+            x="0px"
+            y="0px"
+            viewBox="0 0 100 100"
+            xml:space="preserve"
+          >
+            <path
+              d="M83.339,27.645c-0.3-0.106-0.651-0.24-0.973-0.369c-0.223-0.783-0.639-1.852-1.363-3.358  c-0.26-0.541-0.705-0.97-1.256-1.209c-0.485-0.212-4.795-2.08-6.526-2.602c-1.908-0.574-7.301-1.261-7.909-1.337  c-0.599-0.072-1.199,0.066-1.698,0.4l-3.12,2.08H39.507l-3.12-2.08c-0.499-0.334-1.1-0.474-1.698-0.4  c-0.608,0.076-6.001,0.763-7.91,1.337c-1.729,0.521-6.04,2.39-6.525,2.601c-0.55,0.24-0.996,0.669-1.256,1.21  c-0.725,1.507-1.141,2.575-1.363,3.358c-0.309,0.124-0.653,0.256-0.973,0.37c-0.69,0.246-1.238,0.782-1.498,1.467  C14.037,32.078,4.189,58.348,5.058,67.448c0.852,8.928,4.028,11.502,10.39,13.609c0.86,0.284,1.809,0.082,2.476-0.53l15.55-14.259  h33.055l15.55,14.259c0.66,0.605,1.627,0.81,2.476,0.53c6.361-2.107,9.538-4.682,10.39-13.609  c0.868-9.101-8.979-35.37-10.105-38.336C84.577,28.428,84.029,27.891,83.339,27.645C83.039,27.538,84.029,27.891,83.339,27.645z   M89.966,66.974c-0.593,6.21-2.119,7.589-5.606,8.863l-15.17-13.911c-0.461-0.423-1.063-0.657-1.689-0.657h-35  c-0.626,0-1.229,0.234-1.689,0.657l-15.17,13.911c-3.487-1.274-5.014-2.653-5.606-8.863c-0.614-6.439,6.233-26.512,9.402-35.019  c1.725-0.662,3.06-1.414,3.11-3.071c0.005-0.159-0.006-0.318-0.032-0.474c0.129-0.372,0.352-0.921,0.604-1.493  c1.566-0.668,4.096-1.72,5.102-2.023c0.986-0.297,3.997-0.753,6.172-1.044l2.971,1.98c0.41,0.273,0.894,0.42,1.387,0.42h22.5  c0.493,0,0.977-0.146,1.387-0.42l2.971-1.98c2.175,0.291,5.186,0.747,6.171,1.044c1.006,0.303,3.535,1.354,5.102,2.023  c0.243,0.55,0.473,1.11,0.605,1.493c-0.026,0.155-0.037,0.314-0.032,0.474c0.051,1.657,1.386,2.409,3.111,3.071  C83.733,40.461,90.58,60.531,89.966,66.974z"
+            />
+            <path
+              d="M36.25,38.75c0-4.136-3.364-7.5-7.5-7.5s-7.5,3.364-7.5,7.5s3.364,7.5,7.5,7.5S36.25,42.886,36.25,38.75z M28.75,41.25  c-1.379,0-2.5-1.121-2.5-2.5s1.121-2.5,2.5-2.5s2.5,1.121,2.5,2.5S30.129,41.25,28.75,41.25z"
+            />
+            <path
+              d="M43.771,48.75H41.25v-2.5c0-1.381-1.119-2.5-2.5-2.5s-2.5,1.119-2.5,2.5v2.5h-2.5c-1.381,0-2.5,1.119-2.5,2.5  s1.119,2.5,2.5,2.5h2.5v2.5c0,1.381,1.119,2.5,2.5,2.5s2.5-1.119,2.5-2.5v-2.5h2.521c1.381,0,2.5-1.119,2.5-2.5  S45.152,48.75,43.771,48.75z"
+            />
+            <circle cx="77.5" cy="38.854" r="2.5" />
+            <circle cx="46.25" cy="40" r="2.5" />
+            <circle cx="53.75" cy="40" r="2.5" />
+            <circle cx="72.5" cy="43.75" r="2.5" />
+            <circle cx="72.5" cy="33.75" r="2.5" />
+            <circle cx="67.5" cy="38.75" r="2.5" />
+            <path
+              d="M61.25,43.75c-4.136,0-7.5,3.364-7.5,7.5s3.364,7.5,7.5,7.5s7.5-3.364,7.5-7.5S65.386,43.75,61.25,43.75z M61.25,53.75  c-1.379,0-2.5-1.121-2.5-2.5s1.121-2.5,2.5-2.5s2.5,1.121,2.5,2.5S62.629,53.75,61.25,53.75z"
+            />
+            <path
+              d="M53.75,31.25c0-2.067-1.683-3.75-3.75-3.75s-3.75,1.683-3.75,3.75S47.933,35,50,35S53.75,33.317,53.75,31.25z"
+            />
+          </svg>
+          Gamepad to MIDI <span id="running"></span>
+        </h1>
+      </div>
+      <div class="midi-controls">
+        <div class="midi-device-selector">
+          <label>OUT:</label>
+          <select id="midiDevice">
+            <option value="">Select...</option>
+          </select>
+        </div>
+        <div id="midiStatus" class="midi-status status-disconnected">
+          MIDI: Not Connected
+        </div>
+        <button class="midi-log-toggle">Log</button>
+        <button class="gamepad-3d-toggle">3D</button>
+      </div>
     </div>
-    <div id="midiStatus" class="midi-status status-disconnected">
-        MIDI: Not Connected
-    </div>
-    <button class="midi-log-toggle">Show MIDI Log</button>
-    <button class="gamepad-3d-toggle">Show 3D Gamepad</button>
+
     <div class="midi-log-overlay">
-        <div class="midi-log-header">
-            <h4>MIDI Log</h4>
-            <div class="midi-log-controls">
-                <button>Clear Log</button>
-            </div>
+      <div class="midi-log-header">
+        <h4>MIDI Log</h4>
+        <div class="midi-log-controls">
+          <button>Clear Log</button>
         </div>
-        <div class="midi-log-content">
-            <!-- MIDI log entries will be displayed here -->
-        </div>
+      </div>
+      <div class="midi-log-content">
+        <!-- MIDI log entries will be displayed here -->
+      </div>
     </div>
+
     <div class="gamepad-3d-overlay">
-        <div class="gamepad-3d-content">
-            <div id="gamepad-3d-canvas"></div>
-        </div>
+      <div class="gamepad-3d-content">
+        <div id="gamepad-3d-canvas"></div>
+      </div>
     </div>
-</div>
 
-<div id="gamepads"></div>
-<script src="js/tmi.min.js"></script>
-<script src="js/three.js"></script>
-<script src="js/HVFSimplex.js"></script>
-<script src="js/HVF.js"></script>
-<script src="js/KeyboardState.js"></script>
-<script src="three-gamepad.js"></script>
+    <div id="gamepads"></div>
+    <script src="js/tmi.min.js"></script>
+    <script src="js/three.js"></script>
+    <script src="js/HVFSimplex.js"></script>
+    <script src="js/HVF.js"></script>
+    <script src="js/KeyboardState.js"></script>
+    <script src="three-gamepad.js"></script>
 
-<script src="app.js"></script>
-</body>
+    <script src="app.js"></script>
+  </body>
 </html>

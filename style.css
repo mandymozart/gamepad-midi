@@ -1,5 +1,5 @@
 body {
-  background: #444;
+  background: black;
   color: white;
   font-family: monospace;
   margin: 0;
@@ -7,55 +7,94 @@ body {
 }
 
 .header {
-  background: #333;
-  padding: 1em;
-  margin-bottom: 20px;
-  border-radius: 5px;
+  background: #1a1a1abf;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0 1rem;
+  display: flex;
+  backdrop-filter: blur(10px);
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+  flex-direction: row;
+}
+.header h1 {
+    color: white;
+    fill: white;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+.header h1 svg {
+    height: 3rem;
+    width: 3rem;
+    margin-right: 1rem;
+}
+.brand {
+    height: 3rem;
+    display: flex;
+    flex-direction: row;
 }
 
 .midi-controls {
-  background: #333;
-  padding: 1em;
-  margin-bottom: 20px;
-  border-radius: 5px;
+  display: flex;
+  gap: 1rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
-.midi-controls h3 {
-  margin-top: 0;
-}
 
 .midi-device-selector {
-  margin: 10px 0;
 }
 
 .midi-device-selector select {
   background: #222;
   color: white;
   border: 1px solid #666;
-  padding: 5px;
+  padding: 0.25rem 1rem;
+  border-radius: 1rem;
   font-family: monospace;
 }
 
 .midi-status {
-  margin: 10px 0;
-  padding: 10px;
+  margin: 0;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  color: transparent;
+  padding: 0;
   background: #222;
-  border-radius: 3px;
+  overflow: hidden;
+}
+#running {
+    width: 1rem;
+    margin-left: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    color: white;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #222;
+    overflow: hidden;
 }
 
 .status-connected {
-  background: #0a4d0a;
+  background: #0f0;
 }
 .status-disconnected {
-  background: #4d0a0a;
+  background: #f00;
 }
 
-#gamepads > * {
-  background: #333;
-  padding: 1em;
-  margin: 10px 5px 0 0;
-  border-radius: 5px;
+#gamepads {
+    margin-top: 3rem;
 }
+
 
 #gamepads pre {
   white-space: pre-wrap;
@@ -172,6 +211,7 @@ body {
   border: none;
   padding: 8px 15px;
   margin: 10px 0;
+  text-transform: uppercase;
   border-radius: 3px;
   cursor: pointer;
   font-family: monospace;
