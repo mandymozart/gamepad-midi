@@ -67,9 +67,24 @@
             <!-- Gamepad visual will be displayed here -->
         </div>
     </div>
+    <div class="gamepad-3d-overlay">
+        <div class="gamepad-3d-header">
+            <h4>Gamepad 3D</h4>
+            <button class="gamepad-3d-close">Close</button>
+        </div>
+        <div class="gamepad-3d-content">
+            <div id="gamepad-3d-canvas"></div>
+        </div>
+    </div>
 </div>
 
 <div id="gamepads"></div>
+<script src="js/tmi.min.js"></script>
+<script src="js/three.js"></script>
+<script src="js/HVFSimplex.js"></script>
+<script src="js/HVF.js"></script>
+<script src="js/KeyboardState.js"></script>
+<script src="three-gamepad.js"></script>
 
 <script src="app.js"></script>
 </body>
