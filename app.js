@@ -551,10 +551,10 @@ function createGamepadVisual() {
             
             <!-- D-pad -->
             <div class="dpad">
-                <div class="dpad-button dpad-up" data-button="12"></div>
-                <div class="dpad-button dpad-down" data-button="13"></div>
-                <div class="dpad-button dpad-left" data-button="14"></div>
-                <div class="dpad-button dpad-right" data-button="15"></div>
+                <div class="dpad-button dpad-up"></div>
+                <div class="dpad-button dpad-down"></div>
+                <div class="dpad-button dpad-left"></div>
+                <div class="dpad-button dpad-right"></div>
             </div>
             
             <!-- Face buttons -->
@@ -583,6 +583,15 @@ function updateGamepadVisual() {
     
     const gamepad = currentVisualGamepad;
     
+    // Debug: Log button and axis count (only once per second to avoid spam)
+    if (Math.random() < 0.016) { // ~1 in 60 frames = roughly once per second
+        console.log(`Gamepad buttons: ${gamepad.buttons.length}, axes: ${gamepad.axes.length}`);
+        console.log('Button states:', gamepad.buttons.map((b, i) => `${i}: ${b.pressed}`).filter(s => s.includes('true')));
+        if (gamepad.axes.length > 6) {
+            console.log('D-pad axes (6,7):', gamepad.axes[6], gamepad.axes[7]);
+        }
+    }
+    
     // Update buttons
     const buttonElements = gamepadVisualContent.querySelectorAll('[data-button]');
     buttonElements.forEach(element => {
@@ -596,6 +605,66 @@ function updateGamepadVisual() {
             }
         }
     });
+    
+    // Handle D-pad - try both button and axis methods
+    const dpadUp = gamepadVisualContent.querySelector('.dpad-up');
+    const dpadDown = gamepadVisualContent.querySelector('.dpad-down');
+    const dpadLeft = gamepadVisualContent.querySelector('.dpad-left');
+    const dpadRight = gamepadVisualContent.querySelector('.dpad-right');
+    
+    // Reset D-pad states first
+    [dpadUp, dpadDown, dpadLeft, dpadRight].forEach(el => el && el.classList.remove('pressed'));
+    
+    // Method 1: D-pad as buttons (12, 13, 14, 15)
+    if (gamepad.buttons.length > 15) {
+        if (gamepad.buttons[12] && gamepad.buttons[12].pressed) {
+            dpadUp.classList.add('pressed');
+            console.log('D-pad UP pressed (button 12)');
+        }
+        if (gamepad.buttons[13] && gamepad.buttons[13].pressed) {
+            dpadDown.classList.add('pressed');
+            console.log('D-pad DOWN pressed (button 13)');
+        }
+        if (gamepad.buttons[14] && gamepad.buttons[14].pressed) {
+            dpadLeft.classList.add('pressed');
+            console.log('D-pad LEFT pressed (button 14)');
+        }
+        if (gamepad.buttons[15] && gamepad.buttons[15].pressed) {
+            dpadRight.classList.add('pressed');
+            console.log('D-pad RIGHT pressed (button 15)');
+        }
+    }
+    // Method 2: D-pad as axes (axis 6 = horizontal, axis 7 = vertical)
+    else if (gamepad.axes.length > 7) {
+        const horizontalAxis = gamepad.axes[6]; // -1 = left, 1 = right
+        const verticalAxis = gamepad.axes[7];   // -1 = up, 1 = down
+        
+        if (horizontalAxis < -0.5) {
+            dpadLeft.classList.add('pressed');
+            console.log('D-pad LEFT pressed (axis 6):', horizontalAxis);
+        }
+        if (horizontalAxis > 0.5) {
+            dpadRight.classList.add('pressed');
+            console.log('D-pad RIGHT pressed (axis 6):', horizontalAxis);
+        }
+        if (verticalAxis < -0.5) {
+            dpadUp.classList.add('pressed');
+            console.log('D-pad UP pressed (axis 7):', verticalAxis);
+        }
+        if (verticalAxis > 0.5) {
+            dpadDown.classList.add('pressed');
+            console.log('D-pad DOWN pressed (axis 7):', verticalAxis);
+        }
+    }
+    // Method 3: Try to detect D-pad in any remaining buttons (some controllers use different indices)
+    else {
+        // Check all buttons for any that might be D-pad
+        for (let i = 12; i < gamepad.buttons.length; i++) {
+            if (gamepad.buttons[i] && gamepad.buttons[i].pressed) {
+                console.log(`Button ${i} pressed - might be D-pad`);
+            }
+        }
+    }
     
     // Update analog sticks
     const stickElements = gamepadVisualContent.querySelectorAll('[data-axes]');

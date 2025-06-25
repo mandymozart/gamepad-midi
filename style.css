@@ -1,0 +1,585 @@
+body {
+  background: #444;
+  color: white;
+  font-family: monospace;
+  margin: 0;
+  padding: 20px;
+}
+
+.header {
+  background: #333;
+  padding: 1em;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
+
+.midi-controls {
+  background: #333;
+  padding: 1em;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
+
+.midi-controls h3 {
+  margin-top: 0;
+}
+
+.midi-device-selector {
+  margin: 10px 0;
+}
+
+.midi-device-selector select {
+  background: #222;
+  color: white;
+  border: 1px solid #666;
+  padding: 5px;
+  font-family: monospace;
+}
+
+.midi-status {
+  margin: 10px 0;
+  padding: 10px;
+  background: #222;
+  border-radius: 3px;
+}
+
+.status-connected {
+  background: #0a4d0a;
+}
+.status-disconnected {
+  background: #4d0a0a;
+}
+
+#gamepads > * {
+  background: #333;
+  padding: 1em;
+  margin: 10px 5px 0 0;
+  border-radius: 5px;
+}
+
+#gamepads pre {
+  white-space: pre-wrap;
+}
+
+.head {
+  display: flex;
+}
+.head .id {
+  flex: 1 1 auto;
+}
+.head .index,
+.head .id {
+  display: inline-block;
+  background: #222;
+  padding: 0.5em;
+}
+
+.info .label {
+  width: 7em;
+  display: inline-block;
+}
+.info > div {
+  padding: 0.25em;
+  background: #222;
+  margin: 0.25em 0.25em 0 0;
+}
+
+.inputs {
+  display: flex;
+  flex-wrap: wrap;
+}
+.axes {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.svg text {
+  color: #ccc;
+  font-family: monospace;
+}
+
+.axes svg text {
+  font-size: 0.6px;
+}
+.buttons svg text {
+  font-size: 1.2px;
+}
+.axes > div,
+.buttons > div {
+  display: inline-block;
+  background: #222;
+  margin: 2px;
+  border-radius: 3px;
+}
+
+.axis-controls,
+.button-controls {
+  margin: 10px 0;
+  padding: 10px;
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  gap: 10px;
+}
+
+.control-row label {
+  min-width: 80px;
+}
+
+.control-row input,
+.control-row select {
+  background: #222;
+  color: white;
+  border: 1px solid #666;
+  padding: 3px;
+  font-family: monospace;
+}
+
+.midi-value {
+  color: #0f0;
+  font-weight: bold;
+  min-width: 50px;
+}
+
+.velocity-control {
+  width: 60px;
+}
+
+.note-control,
+.cc-control {
+  width: 80px;
+}
+
+.enabled-checkbox {
+  margin-right: 10px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* MIDI Log Overlay Styles */
+.midi-log-toggle {
+  background: #666;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  margin: 10px 0;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: monospace;
+}
+
+.midi-log-toggle:hover {
+  background: #777;
+}
+
+.midi-log-overlay {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 400px;
+  height: 300px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid #666;
+  border-radius: 5px;
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+}
+
+.midi-log-header {
+  background: #333;
+  padding: 10px;
+  border-bottom: 1px solid #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.midi-log-header h4 {
+  margin: 0;
+  color: white;
+}
+
+.midi-log-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.midi-log-controls button {
+  background: #555;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.midi-log-controls button:hover {
+  background: #666;
+}
+
+.midi-log-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.midi-log-entry {
+  margin: 2px 0;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+
+.midi-log-entry.cc {
+  background: rgba(0, 100, 200, 0.2);
+  border-left: 3px solid #0064c8;
+}
+
+.midi-log-entry.note-on {
+  background: rgba(0, 200, 0, 0.2);
+  border-left: 3px solid #00c800;
+}
+
+.midi-log-entry.note-off {
+  background: rgba(200, 0, 0, 0.2);
+  border-left: 3px solid #c80000;
+}
+
+.midi-log-entry .timestamp {
+  color: #888;
+  font-size: 10px;
+}
+
+/* Gamepad Visual Overlay Styles */
+.gamepad-visual-toggle {
+  background: #666;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  margin: 10px 0 10px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: monospace;
+}
+
+.gamepad-visual-toggle:hover {
+  background: #777;
+}
+
+.gamepad-visual-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 400px;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #666;
+  border-radius: 10px;
+  z-index: 1001;
+  display: none;
+  flex-direction: column;
+}
+
+.gamepad-visual-header {
+  background: #333;
+  padding: 15px;
+  border-bottom: 1px solid #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px 8px 0 0;
+}
+
+.gamepad-visual-header h4 {
+  margin: 0;
+  color: white;
+}
+
+.gamepad-visual-close {
+  background: #555;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.gamepad-visual-close:hover {
+  background: #666;
+}
+
+.gamepad-visual-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gamepad-controller {
+  position: relative;
+  width: 500px;
+  height: 280px;
+  background: #444;
+  border-radius: 40px 40px 20px 20px;
+  border: 3px solid #555;
+}
+
+.gamepad-handles {
+  position: absolute;
+  bottom: -15px;
+  left: 60px;
+  right: 60px;
+  height: 80px;
+  background: #444;
+  border-radius: 0 0 30px 30px;
+  border: 3px solid #555;
+  border-top: none;
+}
+
+.analog-stick {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: #222;
+  border: 2px solid #666;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.analog-stick .stick-dot {
+  width: 20px;
+  height: 20px;
+  background: #888;
+  border-radius: 50%;
+  transition: all 0.1s;
+}
+
+.analog-stick.pressed .stick-dot {
+  background: #0f0;
+}
+
+.left-stick {
+  top: 140px;
+  left: 80px;
+}
+
+.right-stick {
+  top: 140px;
+  right: 80px;
+}
+
+.dpad {
+  position: absolute;
+  top: 80px;
+  left: 80px;
+  width: 60px;
+  height: 60px;
+}
+
+.dpad-button {
+  position: absolute;
+  background: #333;
+  border: 1px solid #666;
+}
+
+.dpad-up,
+.dpad-down {
+  width: 20px;
+  height: 25px;
+  left: 20px;
+}
+
+.dpad-up {
+  top: 0;
+  border-radius: 5px 5px 0 0;
+}
+.dpad-down {
+  bottom: 0;
+  border-radius: 0 0 5px 5px;
+}
+
+.dpad-left,
+.dpad-right {
+  width: 25px;
+  height: 20px;
+  top: 20px;
+}
+
+.dpad-left {
+  left: 0;
+  border-radius: 5px 0 0 5px;
+}
+.dpad-right {
+  right: 0;
+  border-radius: 0 5px 5px 0;
+}
+
+.dpad-button.pressed {
+  background: #0f0;
+  transform: scale(0.9);
+}
+
+.face-buttons {
+  position: absolute;
+  top: 80px;
+  right: 80px;
+  width: 60px;
+  height: 60px;
+}
+
+.face-button {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  background: #333;
+  border: 2px solid #666;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #aaa;
+  transition: all 0.1s;
+}
+
+.face-button.pressed {
+  background: #0f0;
+  color: #000;
+  transform: scale(0.9);
+}
+
+.button-y {
+  top: 0;
+  left: 17.5px;
+}
+.button-x {
+  top: 17.5px;
+  left: 0;
+}
+.button-b {
+  top: 17.5px;
+  right: 0;
+}
+.button-a {
+  bottom: 0;
+  left: 17.5px;
+}
+
+.shoulder-buttons {
+  position: absolute;
+  top: 10px;
+  left: 40px;
+  right: 40px;
+  height: 30px;
+}
+
+.shoulder-button {
+  position: absolute;
+  width: 60px;
+  height: 25px;
+  background: #333;
+  border: 2px solid #666;
+  border-radius: 10px 10px 5px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #aaa;
+  transition: all 0.1s;
+}
+
+.shoulder-button.pressed {
+  background: #0f0;
+  color: #000;
+}
+
+.button-l1 {
+  left: 0;
+}
+.button-r1 {
+  right: 0;
+}
+
+.trigger-buttons {
+  position: absolute;
+  top: -5px;
+  left: 60px;
+  right: 60px;
+  height: 20px;
+}
+
+.trigger-button {
+  position: absolute;
+  width: 40px;
+  height: 15px;
+  background: #333;
+  border: 2px solid #666;
+  border-radius: 5px 5px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #aaa;
+  transition: all 0.1s;
+}
+
+.trigger-button.pressed {
+  background: #0f0;
+  color: #000;
+  height: 20px;
+  top: -5px;
+}
+
+.button-l2 {
+  left: 0;
+}
+.button-r2 {
+  right: 0;
+}
+
+.center-buttons {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+}
+
+.center-button {
+  width: 30px;
+  height: 20px;
+  background: #333;
+  border: 2px solid #666;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #aaa;
+  transition: all 0.1s;
+}
+
+.center-button.pressed {
+  background: #0f0;
+  color: #000;
+}
