@@ -960,8 +960,38 @@ function animate() {
 
   update();
 
-  requestAnimationFrame(animate);
+  // Use setInterval for more reliable background execution
+  // requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
 
-animate();
+// Start animation with setInterval instead of requestAnimationFrame
+// This ensures consistent execution even when window loses focus
+let animationInterval;
+
+function startAnimation() {
+  // Clear any existing interval
+  if (animationInterval) {
+    clearInterval(animationInterval);
+  }
+  
+  // Use setInterval for consistent 60fps execution
+  animationInterval = setInterval(animate, 16); // ~60fps (1000ms/60 ≈ 16.67ms)
+  console.log('Animation started with setInterval for background compatibility');
+}
+
+function stopAnimation() {
+  if (animationInterval) {
+    clearInterval(animationInterval);
+    animationInterval = null;
+    console.log('Animation stopped');
+  }
+}
+
+// Start the animation
+startAnimation();
+
+// Optional: Listen for page visibility changes to provide feedback
+document.addEventListener('visibilitychange', function() {
+  console.log('Visibility changed:', document.visibilityState, 'Hidden:', document.hidden);
+});
