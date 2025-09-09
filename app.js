@@ -45,22 +45,21 @@ const midiConfig = {
     axisInverted: new Map() // axis index -> boolean
 };
 
-// VRM Configuration
+// VRM Configuration - Simplified for button animations only
 const vrmConfig = {
     activeScene: null,
-    sceneEnabled: new Map(), // "${gamepadIndex}" -> boolean (per-controller scene enable)
     
-    // Axis mappings: "${gamepadIndex}-${axisIndex}" -> mapping config
-    axisMappings: new Map(), // key -> {target, parameter, range, multiplier}
-    axisVrmEnabled: new Map(), // "${gamepadIndex}-${axisIndex}" -> boolean
-    
-    // Button mappings: "${gamepadIndex}-${buttonIndex}" -> mapping config  
-    buttonMappings: new Map(), // key -> {target, action, value}
+    // Button mappings: "${gamepadIndex}-${buttonIndex}" -> animation name
+    buttonMappings: new Map(), // key -> animation name
     buttonVrmEnabled: new Map(), // "${gamepadIndex}-${buttonIndex}" -> boolean
     
     // Scene registry
     scenes: new Map() // scene name -> scene config
 };
+
+// Make vrmConfig available globally
+window.vrmConfig = vrmConfig;
+console.log('🔧 vrmConfig created and exposed to window:', window.vrmConfig);
 
 // Initialize MIDI
 async function initMIDI() {
@@ -270,35 +269,6 @@ const axisTemplate = `
             <span class="midi-value"></span>
         </div>
     </div>
-    <div class="control-section">
-        <h5>VRM</h5>
-        <div class="control-row">
-            <input type="checkbox" class="vrm-enabled-checkbox axis-vrm-enabled"> Enable
-        </div>
-        <div class="control-row">
-            <label>Target:</label>
-            <select class="vrm-target-select">
-                <option value="">Select...</option>
-                <option value="head">Head</option>
-                <option value="spine">Spine</option>
-                <option value="leftArm">Left Arm</option>
-                <option value="rightArm">Right Arm</option>
-            </select>
-        </div>
-        <div class="control-row">
-            <label>Parameter:</label>
-            <select class="vrm-parameter-select">
-                <option value="">Select...</option>
-                <option value="rotationX">Rotation X</option>
-                <option value="rotationY">Rotation Y</option>
-                <option value="rotationZ">Rotation Z</option>
-            </select>
-        </div>
-        <div class="control-row">
-            <label>Multiplier:</label>
-            <input type="number" class="vrm-multiplier" min="0.1" max="5" step="0.1" value="1.0">
-        </div>
-    </div>
 </div>
 `;
 
@@ -330,18 +300,20 @@ const buttonTemplate = `
             <input type="checkbox" class="vrm-enabled-checkbox button-vrm-enabled"> Enable
         </div>
         <div class="control-row">
-            <label>Action:</label>
-            <select class="vrm-action-select">
+            <label>Animation:</label>
+            <select class="vrm-animation-select">
                 <option value="">Select...</option>
-                <option value="expression">Expression</option>
-                <option value="gesture">Gesture</option>
-                <option value="reset">Reset Pose</option>
-            </select>
-        </div>
-        <div class="control-row">
-            <label>Value:</label>
-            <select class="vrm-value-select">
-                <option value="">Select...</option>
+                <option value="happy">Happy</option>
+                <option value="angry">Angry</option>
+                <option value="sad">Sad</option>
+                <option value="surprised">Surprised</option>
+                <option value="blink">Blink</option>
+                <option value="a">A</option>
+                <option value="i">I</option>
+                <option value="u">U</option>
+                <option value="e">E</option>
+                <option value="o">O</option>
+                <option value="reset">Reset All</option>
             </select>
         </div>
     </div>
@@ -384,12 +356,6 @@ function addGamepad(gamepad) {
         
         ccControl.value = ndx + 1; // Default CC mapping
         
-        // VRM controls
-        const vrmEnabledCheckbox = div.querySelector('.axis-vrm-enabled');
-        const vrmTargetSelect = div.querySelector('.vrm-target-select');
-        const vrmParameterSelect = div.querySelector('.vrm-parameter-select');
-        const vrmMultiplier = div.querySelector('.vrm-multiplier');
-        
         // Set up MIDI event listeners
         enabledCheckbox.addEventListener('change', (e) => {
             midiConfig.axisEnabled.set(`${gamepad.index}-${ndx}`, e.target.checked);
@@ -403,30 +369,12 @@ function addGamepad(gamepad) {
             midiConfig.ccChannels.set(`${gamepad.index}-${ndx}`, parseInt(e.target.value));
         });
         
-        // Set up VRM event listeners
-        vrmEnabledCheckbox.addEventListener('change', (e) => {
-            vrmConfig.axisVrmEnabled.set(`${gamepad.index}-${ndx}`, e.target.checked);
-        });
-        
-        vrmTargetSelect.addEventListener('change', (e) => {
-            updateVrmAxisMapping(gamepad.index, ndx);
-        });
-        
-        vrmParameterSelect.addEventListener('change', (e) => {
-            updateVrmAxisMapping(gamepad.index, ndx);
-        });
-        
-        vrmMultiplier.addEventListener('change', (e) => {
-            updateVrmAxisMapping(gamepad.index, ndx);
-        });
         
         // Initialize MIDI defaults
         midiConfig.axisEnabled.set(`${gamepad.index}-${ndx}`, true);
         midiConfig.axisInverted.set(`${gamepad.index}-${ndx}`, false);
         midiConfig.ccChannels.set(`${gamepad.index}-${ndx}`, ndx + 1);
         
-        // Initialize VRM defaults
-        vrmConfig.axisVrmEnabled.set(`${gamepad.index}-${ndx}`, false);
         
         // Check the enabled checkbox since we're enabling by default
         enabledCheckbox.checked = true;
@@ -455,8 +403,7 @@ function addGamepad(gamepad) {
         
         // VRM controls
         const vrmEnabledCheckbox = div.querySelector('.button-vrm-enabled');
-        const vrmActionSelect = div.querySelector('.vrm-action-select');
-        const vrmValueSelect = div.querySelector('.vrm-value-select');
+        const vrmAnimationSelect = div.querySelector('.vrm-animation-select');
         
         // Set up MIDI event listeners
         enabledCheckbox.addEventListener('change', (e) => {
@@ -476,13 +423,13 @@ function addGamepad(gamepad) {
             vrmConfig.buttonVrmEnabled.set(`${gamepad.index}-${ndx}`, e.target.checked);
         });
         
-        vrmActionSelect.addEventListener('change', (e) => {
-            updateVrmButtonActionOptions(vrmValueSelect, e.target.value);
-            updateVrmButtonMapping(gamepad.index, ndx);
-        });
-        
-        vrmValueSelect.addEventListener('change', (e) => {
-            updateVrmButtonMapping(gamepad.index, ndx);
+        vrmAnimationSelect.addEventListener('change', (e) => {
+            const buttonKey = `${gamepad.index}-${ndx}`;
+            if (e.target.value) {
+                vrmConfig.buttonMappings.set(buttonKey, e.target.value);
+            } else {
+                vrmConfig.buttonMappings.delete(buttonKey);
+            }
         });
         
         // Initialize MIDI defaults - enable all controls automatically
@@ -554,9 +501,6 @@ function removeGamepad(gamepad) {
             midiConfig.ccChannels.delete(axisKey);
             midiConfig.lastAxisValues.delete(axisKey);
             
-            // Clean up VRM mappings
-            vrmConfig.axisVrmEnabled.delete(axisKey);
-            vrmConfig.axisMappings.delete(axisKey);
         }
         for (let i = 0; i < gamepad.buttons.length; i++) {
             const buttonKey = `${gamepad.index}-${i}`;
@@ -639,13 +583,7 @@ function processController(info) {
             }
         }
         
-        // Update VRM if enabled
-        if (vrmConfig.axisVrmEnabled.get(axisKey) && window.vrmManager && vrmConfig.activeScene) {
-            const mapping = vrmConfig.axisMappings.get(axisKey);
-            if (mapping) {
-                window.vrmManager.updateFromGamepad(axisKey, axisValue, mapping);
-            }
-        }
+        // Axes no longer control VRM animations
     });
     
     // Process buttons and send MIDI notes
@@ -681,18 +619,21 @@ function processController(info) {
             }
         }
         
-        // Handle VRM button actions
-        if (vrmConfig.buttonVrmEnabled.get(buttonKey) && window.vrmManager && vrmConfig.activeScene) {
-            const mapping = vrmConfig.buttonMappings.get(buttonKey);
-            if (mapping) {
+        // Handle VRM button animations
+        if (vrmConfig.buttonVrmEnabled.get(buttonKey) && window.vrmManager) {
+            const animation = vrmConfig.buttonMappings.get(buttonKey);
+            if (animation) {
                 const buttonInfo = buttons[ndx];
                 if (button.pressed && !buttonInfo.vrmPressed) {
-                    // Button just pressed for VRM
-                    window.vrmManager.triggerButtonAction(buttonKey, true, mapping);
+                    // Button just pressed - trigger animation
+                    if (animation === 'reset') {
+                        window.vrmManager.resetAnimations();
+                    } else {
+                        window.vrmManager.triggerAnimation(animation);
+                    }
                     buttonInfo.vrmPressed = true;
                 } else if (!button.pressed && buttonInfo.vrmPressed) {
-                    // Button just released for VRM
-                    window.vrmManager.triggerButtonAction(buttonKey, false, mapping);
+                    // Button released
                     buttonInfo.vrmPressed = false;
                 }
             }
@@ -774,95 +715,39 @@ function setupOverlayToggles() {
 }
 
 // VRM Helper Functions
-function updateVrmAxisMapping(gamepadIndex, axisIndex) {
-    const axisKey = `${gamepadIndex}-${axisIndex}`;
-    const axisDiv = document.querySelector(`[data-gamepad="${gamepadIndex}"] .axes > div:nth-child(${axisIndex + 1})`);
-    
-    if (!axisDiv) return;
-    
-    const target = axisDiv.querySelector('.vrm-target-select').value;
-    const parameter = axisDiv.querySelector('.vrm-parameter-select').value;
-    const multiplier = parseFloat(axisDiv.querySelector('.vrm-multiplier').value) || 1.0;
-    
-    if (target && parameter) {
-        vrmConfig.axisMappings.set(axisKey, {
-            target,
-            parameter,
-            range: [-1, 1], // Default range
-            multiplier
-        });
-    } else {
-        vrmConfig.axisMappings.delete(axisKey);
-    }
-}
 
-function updateVrmButtonMapping(gamepadIndex, buttonIndex) {
-    const buttonKey = `${gamepadIndex}-${buttonIndex}`;
-    const buttonDiv = document.querySelector(`[data-gamepad="${gamepadIndex}"] .buttons > div:nth-child(${buttonIndex + 1})`);
-    
-    if (!buttonDiv) return;
-    
-    const action = buttonDiv.querySelector('.vrm-action-select').value;
-    const value = buttonDiv.querySelector('.vrm-value-select').value;
-    
-    if (action && value) {
-        vrmConfig.buttonMappings.set(buttonKey, {
-            target: action === 'expression' ? 'expressions' : 'gestures',
-            action,
-            value
-        });
-    } else {
-        vrmConfig.buttonMappings.delete(buttonKey);
-    }
-}
-
-function updateVrmButtonActionOptions(valueSelect, action) {
-    valueSelect.innerHTML = '<option value="">Select...</option>';
-    
-    if (!window.vrmSceneManager || !vrmConfig.activeScene) return;
-    
-    const scene = vrmConfig.activeScene;
-    let options = [];
-    
-    switch (action) {
-        case 'expression':
-            if (scene.expressions) {
-                options = Object.entries(scene.expressions).map(([key, config]) => ({
-                    value: key,
-                    label: config.label || key
-                }));
-            }
-            break;
-        case 'gesture':
-            if (scene.gestures) {
-                options = Object.entries(scene.gestures).map(([key, config]) => ({
-                    value: key,
-                    label: config.label || key
-                }));
-            }
-            break;
-        case 'reset':
-            options = [{ value: 'reset', label: 'Reset Pose' }];
-            break;
-    }
-    
-    options.forEach(option => {
-        const optionElem = document.createElement('option');
-        optionElem.value = option.value;
-        optionElem.textContent = option.label;
-        valueSelect.appendChild(optionElem);
-    });
-}
 
 // VRM Scene Management
 function initVRMSystem() {
-    if (typeof window.initVRMSystem === 'function') {
-        // Get the 3D scene from three-gamepad.js
-        const canvas = document.querySelector('#gamepad-3d-canvas canvas');
-        if (canvas && window.scene && window.renderer) {
-            window.initVRMSystem(window.scene, window.renderer);
-            console.log('VRM system initialized');
+    // Check if VRM classes are available from avatar.js
+    if (typeof window.VRMManager === 'undefined' || typeof window.VRMSceneManager === 'undefined') {
+        console.log('VRM classes not loaded, retrying...');
+        setTimeout(initVRMSystem, 500);
+        return;
+    }
+    
+    // Check if 3D scene elements are ready
+    const canvas = document.querySelector('#gamepad-3d-canvas canvas');
+    const sceneReady = canvas && window.scene && window.renderer;
+    
+    if (sceneReady) {
+        try {
+            // Initialize VRM system using the classes from avatar.js
+            const vrmManager = new window.VRMManager(window.scene, window.renderer);
+            const sceneManager = new window.VRMSceneManager(vrmManager);
+            
+            // Make available globally
+            window.vrmManager = vrmManager;
+            window.vrmSceneManager = sceneManager;
+            
+            console.log('VRM system initialized successfully');
+        } catch (error) {
+            console.error('Error initializing VRM system:', error);
+            setTimeout(initVRMSystem, 1000);
         }
+    } else {
+        console.log('3D scene not ready, retrying VRM init...');
+        setTimeout(initVRMSystem, 250);
     }
 }
 
@@ -882,9 +767,6 @@ function loadVRMScene(sceneName) {
             // Update status
             vrmStatusElem.textContent = `VRM: ${scene.name}`;
             vrmStatusElem.className = 'vrm-status status-connected';
-            
-            // Update UI to reflect new scene options
-            updateAllVrmControls();
         })
         .catch(error => {
             console.error('Failed to load VRM scene:', error);
@@ -893,15 +775,6 @@ function loadVRMScene(sceneName) {
         });
 }
 
-function updateAllVrmControls() {
-    // Update all VRM dropdowns with current scene options
-    document.querySelectorAll('.vrm-action-select').forEach(select => {
-        const valueSelect = select.parentElement.parentElement.querySelector('.vrm-value-select');
-        if (select.value) {
-            updateVrmButtonActionOptions(valueSelect, select.value);
-        }
-    });
-}
 
 // Initialize everything
 initMIDI();
@@ -909,5 +782,15 @@ setupOverlayToggles();
 
 // Initialize VRM system after a short delay to ensure three-gamepad.js is loaded
 setTimeout(initVRMSystem, 1000);
+
+// Auto-load a default VRM scene after initialization
+setTimeout(() => {
+    if (window.vrmSceneManager && vrmSceneSelect.options.length > 1) {
+        const defaultScene = vrmSceneSelect.options[1].value; // First non-empty option
+        console.log(`🎭 Auto-loading default VRM scene: ${defaultScene}`);
+        vrmSceneSelect.value = defaultScene;
+        loadVRMScene(defaultScene);
+    }
+}, 2000);
 
 requestAnimationFrame(process);

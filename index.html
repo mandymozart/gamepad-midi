@@ -56,7 +56,7 @@
           <select id="vrmScene">
             <option value="">Select Scene...</option>
             <option value="cat-pope">Cat Pope</option>
-            <option value="basic-human">Basic Human</option>
+            <option value="sample">Sample</option>
           </select>
         </div>
         <div id="midiStatus" class="midi-status status-disconnected">
@@ -89,17 +89,27 @@
       </div>
     </div>
 
+
     <div id="gamepads">
       <p>Touch gamepad to activate MIDI</p>
     </div>
-    <script src="js/tmi.min.js"></script>
-    <script src="js/three.js"></script>
-    <script src="js/HVFSimplex.js"></script>
-    <script src="js/HVF.js"></script>
-    <script src="js/KeyboardState.js"></script>
-    <script src="three-gamepad.js"></script>
-    <script type="module" src="js/three-vrm.js"></script>
-    <script type="module" src="scenes/cat-pope.js"></script>
+    <script src="lib/tmi.min.js"></script>
+    <!-- Use compatible Three.js versions from working /3d example -->
+    <script src="lib/three.js"></script>
+    <script src="lib/HVFSimplex.js"></script>
+    <script src="lib/HVF.js"></script>
+    <script src="lib/KeyboardState.js"></script>
+
+    <script src="lib/GLTFLoader.js"></script>
+    <script src="lib/OrbitControls.js"></script>
+    <script src="lib/three-vrm.js"></script>
+
+    
+
+    <script src="components/scene.js"></script>
+    <script src="components/avatar.js"></script>
+    <script src="scenes/cat-pope.js"></script>
+    <script src="scenes/sample.js"></script>
 
     <script src="app.js"></script>
   </body>

@@ -1,10 +1,10 @@
-// Cat Pope VRM Scene Configuration
-// Example scene for gamepad-to-VRM mapping
+// VRM Scene Configuration for Cat Pope character
+// Defines VRM models, expressions, gestures, and gamepad mappings
 
-export const catPopeScene = {
-    name: "Cat Pope",
+const catPopeScene = {
+    name: "cat-pope",
     description: "A regal cat character with papal attire",
-    vrmUrl: "https://dg3rfg6exbkmv.cloudfront.net/c/v1/s=op/model_basis_files/27937/157391511918548715.vrm", // Placeholder URL
+    vrmUrl: "./public/CatPope.vrm", // Local VRM file
     
     // Available mapping targets for this character
     mappingTargets: {
@@ -44,7 +44,7 @@ export const catPopeScene = {
     
     // Available expressions for button mapping
     expressions: {
-        happy: { label: "Happy/Smile", description: "Joyful expression" },
+        happy: { label: "Terrified", description: "Joyful expression" },
         angry: { label: "Angry", description: "Stern papal disapproval" },
         surprised: { label: "Surprised", description: "Wide-eyed wonder" },
         blink: { label: "Blink", description: "Eye blink animation" },
@@ -99,11 +99,11 @@ export const catPopeScene = {
         autoReturn: true, // Return to neutral pose after gestures
         
         // Camera settings for this scene
-        camera: {
-            position: { x: 0, y: 1.6, z: 2.5 },
-            target: { x: 0, y: 1.4, z: 0 },
-            fov: 45
-        },
+        // camera: {
+        //     position: { x: 0, y: 0, z: 2.5 },
+        //     target: { x: 0, y: 1.4, z: 0 },
+        //     fov: 45
+        // },
         
         // Lighting setup
         lighting: {
@@ -136,41 +136,17 @@ export const catPopeScene = {
     }
 };
 
-// Alternative scene configurations for testing
-export const testScenes = {
-    basicHuman: {
-        name: "Basic Human",
-        description: "Simple human character for testing",
-        vrmUrl: "https://cdn.jsdelivr.net/gh/pixiv/three-vrm@dev/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm",
-        mappingTargets: {
-            head: {
-                label: "Head",
-                parameters: {
-                    rotationX: { label: "Nod", range: [-0.5, 0.5] },
-                    rotationY: { label: "Turn", range: [-1.0, 1.0] },
-                    rotationZ: { label: "Tilt", range: [-0.3, 0.3] }
-                }
-            }
-        },
-        expressions: {
-            neutral: { label: "Neutral" },
-            happy: { label: "Happy" },
-            angry: { label: "Angry" },
-            surprised: { label: "Surprised" }
-        },
-        defaultMappings: {
-            axes: {
-                "leftStick": {
-                    x: { target: "head", parameter: "rotationY" },
-                    y: { target: "head", parameter: "rotationX", multiplier: -1.0 }
-                }
-            }
-        }
-    }
-};
-
 // Register scenes when this module loads
-if (typeof window !== 'undefined' && window.vrmSceneManager) {
-    window.vrmSceneManager.registerScene(catPopeScene);
-    window.vrmSceneManager.registerScene(testScenes.basicHuman);
-}
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.vrmSceneManager) {
+        window.vrmSceneManager.registerScene(catPopeScene);
+    } else {
+        // Retry registration after VRM system is ready
+        setTimeout(() => {
+            if (window.vrmSceneManager) {
+                window.vrmSceneManager.registerScene(catPopeScene);
+                console.log('VRM scenes registered');
+            }
+        }, 1000);
+    }
+});
