@@ -20,6 +20,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       enableRemoteModule: false,
+      backgroundThrottling: false, // Critical: Prevents background throttling
       preload: path.join(__dirname, 'preload.js')
     },
     icon: path.join(__dirname, 'icon.png'), // Use existing gamepad icon
@@ -31,26 +32,73 @@ function createWindow() {
 
   // Prevent the app from pausing when window loses focus
   mainWindow.webContents.on('dom-ready', () => {
-    // Inject script to prevent requestAnimationFrame throttling
+    // Inject comprehensive script to prevent all forms of throttling
     mainWindow.webContents.executeJavaScript(`
       // Override document visibility to always be 'visible'
       Object.defineProperty(document, 'hidden', {
         value: false,
-        writable: false
+        writable: false,
+        configurable: false
       });
       
       Object.defineProperty(document, 'visibilityState', {
         value: 'visible',
-        writable: false
+        writable: false,
+        configurable: false
       });
       
-      // Ensure requestAnimationFrame continues running
+      // Block visibility change events
+      document.addEventListener('visibilitychange', function(e) {
+        e.stopImmediatePropagation();
+      }, true);
+      
+      // Store original timing functions
       const originalRaf = window.requestAnimationFrame;
+      const originalSetTimeout = window.setTimeout;
+      const originalSetInterval = window.setInterval;
+      
+      // Create a high-frequency timer as fallback
+      let fallbackTimers = new Set();
+      let isUsingFallback = false;
+      
+      // Enhanced requestAnimationFrame with fallback
       window.requestAnimationFrame = function(callback) {
-        return originalRaf.call(window, callback);
+        const id = originalRaf.call(window, callback);
+        
+        // Set up a fallback timer in case RAF gets throttled
+        const fallbackId = originalSetTimeout(() => {
+          if (isUsingFallback) {
+            callback(performance.now());
+          }
+        }, 16); // ~60fps
+        
+        fallbackTimers.add(fallbackId);
+        return id;
       };
       
-      console.log('Electron: Focus handling overrides applied');
+      // Monitor if RAF is being throttled
+      let lastRafTime = performance.now();
+      let rafThrottleCheck = originalSetInterval(() => {
+        const now = performance.now();
+        const timeSinceLastRaf = now - lastRafTime;
+        
+        // If RAF hasn't been called in over 100ms, assume it's throttled
+        if (timeSinceLastRaf > 100) {
+          isUsingFallback = true;
+          console.log('Electron: requestAnimationFrame throttled, using fallback timer');
+        } else {
+          isUsingFallback = false;
+        }
+      }, 50);
+      
+      // Track RAF calls
+      const originalRafCallback = window.requestAnimationFrame;
+      window.requestAnimationFrame = function(callback) {
+        lastRafTime = performance.now();
+        return originalRafCallback.call(window, callback);
+      };
+      
+      console.log('Electron: Enhanced focus handling overrides applied');
     `);
   });
 
