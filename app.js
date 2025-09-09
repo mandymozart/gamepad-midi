@@ -60,6 +60,9 @@ const vrmConfig = {
 // Make vrmConfig available globally
 window.vrmConfig = vrmConfig;
 console.log('🔧 vrmConfig created and exposed to window:', window.vrmConfig);
+// Preset Management
+const presets = new Map(); // presetName -> presetData
+const gamepadPresets = new Map(); // gamepadIndex -> currentPresetName
 
 // Initialize MIDI
 async function initMIDI() {
@@ -221,12 +224,226 @@ function sendMIDINoteOff(note, channel = 0) {
     addMIDILogEntry('note-off', `Note ${note} off`, '');
 }
 
+// Preset Management Functions
+function captureCurrentPreset(gamepadIndex, gamepad) {
+    const presetData = {
+        metadata: {
+            gamepadId: gamepad.id,
+            gamepadIndex: gamepadIndex,
+            axesCount: gamepad.axes.length,
+            buttonsCount: gamepad.buttons.length,
+            createdAt: new Date().toISOString()
+        },
+        axes: {},
+        buttons: {}
+    };
+
+    // Capture axis settings
+    for (let i = 0; i < gamepad.axes.length; i++) {
+        const key = `${gamepadIndex}-${i}`;
+        presetData.axes[i] = {
+            enabled: midiConfig.axisEnabled.get(key) || false,
+            inverted: midiConfig.axisInverted.get(key) || false,
+            ccNumber: midiConfig.ccChannels.get(key) || (i + 1),
+            channel: 0 // Default channel, could be made configurable
+        };
+    }
+
+    // Capture button settings
+    for (let i = 0; i < gamepad.buttons.length; i++) {
+        const key = `${gamepadIndex}-${i}`;
+        presetData.buttons[i] = {
+            enabled: midiConfig.buttonEnabled.get(key) || false,
+            note: midiConfig.noteChannels.get(key) || (60 + i),
+            velocity: midiConfig.velocities.get(key) || 127,
+            channel: 0 // Default channel, could be made configurable
+        };
+    }
+
+    return presetData;
+}
+
+function applyPreset(gamepadIndex, gamepad, presetData) {
+    // Check compatibility and show warning if needed
+    const warning = checkPresetCompatibility(gamepad, presetData);
+    const warningElem = document.querySelector(`[data-gamepad="${gamepadIndex}"] .preset-warning`);
+    
+    if (warning) {
+        warningElem.textContent = warning;
+        warningElem.style.display = 'block';
+    } else {
+        warningElem.style.display = 'none';
+    }
+
+    // Apply axis settings
+    Object.entries(presetData.axes || {}).forEach(([axisIndex, settings]) => {
+        const index = parseInt(axisIndex);
+        if (index < gamepad.axes.length) {
+            const key = `${gamepadIndex}-${index}`;
+            midiConfig.axisEnabled.set(key, settings.enabled);
+            midiConfig.axisInverted.set(key, settings.inverted);
+            midiConfig.ccChannels.set(key, settings.ccNumber);
+        }
+    });
+
+    // Apply button settings
+    Object.entries(presetData.buttons || {}).forEach(([buttonIndex, settings]) => {
+        const index = parseInt(buttonIndex);
+        if (index < gamepad.buttons.length) {
+            const key = `${gamepadIndex}-${index}`;
+            midiConfig.buttonEnabled.set(key, settings.enabled);
+            midiConfig.noteChannels.set(key, settings.note);
+            midiConfig.velocities.set(key, settings.velocity);
+        }
+    });
+
+    // Update UI to reflect the loaded preset
+    updatePresetUI(gamepadIndex, gamepad);
+}
+
+function checkPresetCompatibility(gamepad, presetData) {
+    const warnings = [];
+    
+    if (presetData.metadata.gamepadId !== gamepad.id) {
+        warnings.push(`Controller mismatch: preset for "${presetData.metadata.gamepadId}", current is "${gamepad.id}"`);
+    }
+    
+    if (presetData.metadata.axesCount !== gamepad.axes.length) {
+        warnings.push(`Axes count mismatch: preset has ${presetData.metadata.axesCount}, current has ${gamepad.axes.length}`);
+    }
+    
+    if (presetData.metadata.buttonsCount !== gamepad.buttons.length) {
+        warnings.push(`Buttons count mismatch: preset has ${presetData.metadata.buttonsCount}, current has ${gamepad.buttons.length}`);
+    }
+    
+    return warnings.length > 0 ? warnings.join('; ') : null;
+}
+
+function updatePresetUI(gamepadIndex, gamepad) {
+    const gamepadElem = document.querySelector(`[data-gamepad="${gamepadIndex}"]`);
+    if (!gamepadElem) return;
+
+    // Update axis UI elements
+    const axisElements = gamepadElem.querySelectorAll('.axes > div');
+    axisElements.forEach((elem, index) => {
+        const key = `${gamepadIndex}-${index}`;
+        const enabledCheckbox = elem.querySelector('.axis-enabled');
+        const invertCheckbox = elem.querySelector('.axis-invert');
+        const ccControl = elem.querySelector('.cc-control');
+        
+        if (enabledCheckbox) enabledCheckbox.checked = midiConfig.axisEnabled.get(key) || false;
+        if (invertCheckbox) invertCheckbox.checked = midiConfig.axisInverted.get(key) || false;
+        if (ccControl) ccControl.value = midiConfig.ccChannels.get(key) || (index + 1);
+    });
+
+    // Update button UI elements
+    const buttonElements = gamepadElem.querySelectorAll('.buttons > div');
+    buttonElements.forEach((elem, index) => {
+        const key = `${gamepadIndex}-${index}`;
+        const enabledCheckbox = elem.querySelector('.button-enabled');
+        const noteControl = elem.querySelector('.note-control');
+        const velocityControl = elem.querySelector('.velocity-control');
+        
+        if (enabledCheckbox) enabledCheckbox.checked = midiConfig.buttonEnabled.get(key) || false;
+        if (noteControl) noteControl.value = midiConfig.noteChannels.get(key) || (60 + index);
+        if (velocityControl) velocityControl.value = midiConfig.velocities.get(key) || 127;
+    });
+}
+
+function savePresetsToFile() {
+    const presetsObject = Object.fromEntries(presets);
+    const jsonData = JSON.stringify(presetsObject, null, 2);
+    
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gamepad-presets-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    URL.revokeObjectURL(url);
+    addMIDILogEntry('info', 'Presets saved to file', `${presets.size} presets exported`);
+}
+
+function loadPresetsFromFile(fileData) {
+    try {
+        const presetsData = JSON.parse(fileData);
+        
+        // Clear existing presets
+        presets.clear();
+        
+        // Load new presets
+        Object.entries(presetsData).forEach(([name, data]) => {
+            presets.set(name, data);
+        });
+        
+        // Update all preset dropdowns
+        updateAllPresetDropdowns();
+        
+        addMIDILogEntry('info', 'Presets loaded from file', `${presets.size} presets imported`);
+        return true;
+    } catch (error) {
+        addMIDILogEntry('error', 'Failed to load presets', error.message);
+        return false;
+    }
+}
+
+function updateAllPresetDropdowns() {
+    const selectElements = document.querySelectorAll('.preset-select');
+    selectElements.forEach(select => {
+        // Save current selection
+        const currentValue = select.value;
+        
+        // Clear and rebuild options
+        select.innerHTML = '<option value="">-- Select Preset --</option>';
+        
+        presets.forEach((data, name) => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+        
+        // Restore selection if it still exists
+        if (presets.has(currentValue)) {
+            select.value = currentValue;
+        }
+    });
+}
+
 // Templates for gamepad display with MIDI controls
 const controllerTemplate = `
 <div>
   <div class="head"><div class="index"></div><div class="id"></div></div>
   <div class="info"><div class="label">connected:</div><span class="connected"></span></div>
   <div class="info"><div class="label">mapping:</div><span class="mapping"></span></div>
+  <div class="preset-section">
+    <div class="section-header">
+      <h4>Presets</h4>
+    </div>
+    <div class="preset-controls">
+      <div class="preset-row">
+        <select class="preset-select">
+          <option value="">-- Select Preset --</option>
+        </select>
+        <div class="preset-warning" style="display: none; color: orange; font-size: 12px; margin-top: 5px;"></div>
+      </div>
+      <div class="preset-create-row" style="margin-top: 8px;">
+        <input type="text" class="preset-name-input" placeholder="New preset name..." style="width: 150px; margin-right: 5px;">
+        <button class="preset-create" type="button">Create</button>
+      </div>
+      <div class="preset-buttons">
+        <button class="preset-update" type="button" disabled>Update</button>
+        <button class="preset-load" type="button" disabled>Load</button>
+        <button class="preset-save" type="button">Save All</button>
+        <button class="preset-open" type="button">Open File</button>
+      </div>
+      <input type="file" class="preset-file-input" accept=".json" style="display: none;">
+    </div>
+  </div>
   <div class="inputs">
     <div class="axes-section">
         <div class="section-header">
@@ -474,6 +691,114 @@ function addGamepad(gamepad) {
             const checkbox = buttonDiv.querySelector('.button-enabled');
             checkbox.checked = true;
         }
+    });
+
+    // Preset event handlers
+    const presetSelect = elem.querySelector('.preset-select');
+    const presetUpdateBtn = elem.querySelector('.preset-update');
+    const presetLoadBtn = elem.querySelector('.preset-load');
+    const presetSaveBtn = elem.querySelector('.preset-save');
+    const presetOpenBtn = elem.querySelector('.preset-open');
+    const presetFileInput = elem.querySelector('.preset-file-input');
+    const presetNameInput = elem.querySelector('.preset-name-input');
+    const presetCreateBtn = elem.querySelector('.preset-create');
+    
+    // Set data attribute for gamepad identification
+    elem.setAttribute('data-gamepad', gamepad.index);
+    
+    // Preset select change handler
+    presetSelect.addEventListener('change', (e) => {
+        const presetName = e.target.value;
+        presetUpdateBtn.disabled = !presetName;
+        presetLoadBtn.disabled = !presetName;
+        gamepadPresets.set(gamepad.index, presetName);
+    });
+    
+    // Create button - creates a new preset with current settings
+    presetCreateBtn.addEventListener('click', () => {
+        const presetName = presetNameInput.value.trim();
+        if (!presetName) {
+            addMIDILogEntry('warning', 'Preset name required', 'Enter a name for the new preset');
+            return;
+        }
+        
+        if (presets.has(presetName)) {
+            addMIDILogEntry('warning', 'Preset already exists', `"${presetName}" already exists. Use Update button to modify it.`);
+            return;
+        }
+        
+        const currentPreset = captureCurrentPreset(gamepad.index, gamepad);
+        presets.set(presetName, currentPreset);
+        
+        // Update all dropdowns and select the new preset
+        updateAllPresetDropdowns();
+        presetSelect.value = presetName;
+        presetUpdateBtn.disabled = false;
+        presetLoadBtn.disabled = false;
+        gamepadPresets.set(gamepad.index, presetName);
+        
+        // Clear input
+        presetNameInput.value = '';
+        
+        addMIDILogEntry('info', `Preset "${presetName}" created`, 'Current settings saved as new preset');
+    });
+    
+    // Update button - captures current settings and updates the selected preset
+    presetUpdateBtn.addEventListener('click', () => {
+        const presetName = presetSelect.value;
+        if (!presetName) return;
+        
+        const currentPreset = captureCurrentPreset(gamepad.index, gamepad);
+        presets.set(presetName, currentPreset);
+        addMIDILogEntry('info', `Preset "${presetName}" updated`, 'Current settings saved');
+    });
+    
+    // Load button - applies the selected preset to current gamepad
+    presetLoadBtn.addEventListener('click', () => {
+        const presetName = presetSelect.value;
+        if (!presetName || !presets.has(presetName)) return;
+        
+        const presetData = presets.get(presetName);
+        applyPreset(gamepad.index, gamepad, presetData);
+        addMIDILogEntry('info', `Preset "${presetName}" loaded`, 'Settings applied');
+    });
+    
+    // Save button - exports all presets to JSON file
+    presetSaveBtn.addEventListener('click', () => {
+        if (presets.size === 0) {
+            addMIDILogEntry('warning', 'No presets to save', 'Create some presets first');
+            return;
+        }
+        savePresetsToFile();
+    });
+    
+    // Open button - triggers file input
+    presetOpenBtn.addEventListener('click', () => {
+        presetFileInput.click();
+    });
+    
+    // File input handler - loads presets from JSON file
+    presetFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const success = loadPresetsFromFile(event.target.result);
+            if (success) {
+                // Update button states if current gamepad has a preset selected
+                const currentPreset = gamepadPresets.get(gamepad.index);
+                if (currentPreset && presets.has(currentPreset)) {
+                    presetSelect.value = currentPreset;
+                    presetUpdateBtn.disabled = false;
+                    presetLoadBtn.disabled = false;
+                }
+            }
+        };
+        reader.readAsText(file);
+        
+        // Reset file input
+        e.target.value = '';
     });
 
     gamepadsByIndex[gamepad.index] = {
