@@ -9,7 +9,12 @@
     "dist": "electron-builder --publish=never",
     "pack": "electron-builder --dir"
   },
-  "keywords": ["gamepad", "midi", "controller", "electron"],
+  "keywords": [
+    "gamepad",
+    "midi",
+    "controller",
+    "electron"
+  ],
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
@@ -40,5 +45,8 @@
       "target": "AppImage",
       "icon": "icon.png"
     }
+  },
+  "dependencies": {
+    "kalidokit": "^1.1.5"
   }
 }

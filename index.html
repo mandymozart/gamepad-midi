@@ -51,8 +51,19 @@
             <option value="">Select...</option>
           </select>
         </div>
+        <div class="vrm-scene-selector">
+          <label>VRM:</label>
+          <select id="vrmScene">
+            <option value="">Select Scene...</option>
+            <option value="cat-pope">Cat Pope</option>
+            <option value="basic-human">Basic Human</option>
+          </select>
+        </div>
         <div id="midiStatus" class="midi-status status-disconnected">
           MIDI: Not Connected
+        </div>
+        <div id="vrmStatus" class="vrm-status status-disconnected">
+          VRM: No Scene
         </div>
         <button class="gamepads-toggle">Pads</button>
         <button class="gamepad-3d-toggle">3D</button>
@@ -87,6 +98,8 @@
     <script src="js/HVF.js"></script>
     <script src="js/KeyboardState.js"></script>
     <script src="three-gamepad.js"></script>
+    <script type="module" src="js/three-vrm.js"></script>
+    <script type="module" src="scenes/cat-pope.js"></script>
 
     <script src="app.js"></script>
   </body>

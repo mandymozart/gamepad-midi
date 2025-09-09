@@ -65,7 +65,11 @@ body {
 }
 
 
-.midi-device-selector {
+.midi-device-selector,
+.vrm-scene-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .midi-device-selector select {
@@ -77,7 +81,8 @@ body {
   font-family: var(--font-sans);
 }
 
-.midi-status {
+.midi-status,
+.vrm-status {
   margin: 0;
   width: 1rem;
   height: 1rem;
@@ -86,6 +91,18 @@ body {
   padding: 0;
   background: #222;
   overflow: hidden;
+}
+
+.status-connected {
+  background-color: #4CAF50 !important;
+}
+
+.status-connecting {
+  background-color: #FF9800 !important;
+}
+
+.status-disconnected {
+  background-color: #f44336 !important;
 }
 #running {
     width: 100vw;
@@ -108,17 +125,41 @@ body {
     display: none;
 }
 
-.status-connected {
-  background: #0f0;
-}
-.status-disconnected {
-  background: #f00;
-}
-
 #gamepads {
     margin-top: 3rem;
 }
 
+#gamepads > div {
+  border: 1px solid #444;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #2a2a2a;
+}
+
+.control-section {
+  border: 1px solid #555;
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #333;
+}
+
+.control-section h5 {
+  margin: 0 0 8px 0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.control-section:first-child {
+  background-color: #2a4a2a;
+}
+
+.control-section:last-child {
+  background-color: #4a2a2a;
+}
 
 #gamepads pre {
   white-space: pre-wrap;
